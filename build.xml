@@ -110,9 +110,9 @@
 			<fileset dir="${properties.dir}" includes="*.properties"/>   
 			<fileset dir="${images.dir}" includes="*.gif"/>   
 			<manifest>
-				<attribute name="Class-Path" value="${manifest.classpath}"/>
+				<!--<attribute name="Class-Path" value="${manifest.classpath}"/>-->
 				<attribute name="Built-By" value="${app.developer}, ${app.company}"/>
-				<!--<attribute name="Main-Class" value="${main.class}"/>-->
+				<attribute name="Main-Class" value="${main.class}"/>
 			</manifest>
 		</jar>
     	
