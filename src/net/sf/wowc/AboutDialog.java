@@ -21,6 +21,10 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
 
+import net.sf.wowc.WoWConfig;
+import net.sf.wowc.WoWConfigException;
+import net.sf.wowc.WoWConfigPropertyNotFoundException;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -81,7 +85,16 @@ public class AboutDialog extends JDialog {
 		getContentPane().add(textArea, gridBagConstraints);
 		Font font = new Font("Arial", Font.PLAIN, 10);
 		textArea.setFont(new Font("Arial", Font.PLAIN, 10));
-		textArea.setText("WoWCompanion v0.1.9\nCreated by arimus & ulic\nCouncil of Thoyr, Lightbringer\n\n(C) Copyright David Castro, 2005\nAll rights reserved");
+
+		String about = "Created by arimus & ulic\nCouncil of Thoyr, Lightbringer\n\n(C) Copyright David Castro, 2005\nAll rights reserved";
+		try {
+			about = new WoWConfig().getProperty("about.info");
+		} catch (WoWConfigException e) {
+			// do nothing
+		} catch (WoWConfigPropertyNotFoundException e) {
+			// do nothing
+		}
+		textArea.setText(about);
 		textArea.setEditable(false);
 
 		closeButton = new JButton();
