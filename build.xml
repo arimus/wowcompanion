@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- 
+	Ant build file for the documentation tutorial code
+	Writer of a chapter with an example have to include a foroward
+	to their build file.  This latest build file suppose arguments 
+	sets here :
+		src.dir   : Directory where the source are : ./src
+		build.dir : Base directory where to store generated files
+		classpath : Classpath used to make any compilation 
+	
+  -->
+
+<project name="wowcompanion" default="all" basedir=".">
+	<!-- Load user property definition overrides -->
+	<property file="build.properties"/>
+	<property file="${user.home}/build.properties"/>
+
+    <property environment="env" />
+    <property name="src.dir" value="${basedir}/src"/>
+    <property name="src.resources" value="${basedir}/resources"/>
+    <property name="build.dir" value="${basedir}/build"/>
+    <property name="build.onejar.dir" value="${basedir}/build.onejar"/>
+    <property name="dist.dir" value="${basedir}/dist"/>
+    <property name="properties.dir" value="${basedir}/properties"/>
+    <property name="images.dir" value="${basedir}/images"/>
+	<property name="schema.dir" value="schema"/>
+    <property name="lib.dir" value="${basedir}/lib"/>
+    <property name="junit.dir" value="${basedir}/test/junit"/>
+    <property name="junit.report.dir" value="${basedir}/test/junit/reports"/>
+	<!--  ==================== Compilation Control Options ==================== -->
+	<!--
+	  These properties control option settings on the Javac compiler when it
+	  is invoked using the <javac> task.
+
+	  compile.debug        Should compilation include the debug option?
+	  compile.deprecation  Should compilation include the deprecation option?
+	  compile.optimize     Should compilation include the optimize option?
+	-->
+	<property name="compile.debug"       value="true"/>
+	<property name="compile.deprecation" value="false"/>
+	<property name="compile.optimize"    value="true"/>
+
+
+	<!-- ==================== External Dependencies =========================== -->
+	<!--<property name="some.jar" value="(set this in build.properties!)"/>-->
+	<property name="log4j.properties" value="(set this in build.properties!)"/>
+
+	<!-- ==================== Compilation Classpath =========================== -->
+	<!--
+	  Rather than relying on the CLASSPATH environment variable, Ant includes
+	  features that makes it easy to dynamically construct the classpath you
+	  need for each compilation.  The example below constructs the compile
+	  classpath to include the servlet.jar file, as well as the other
+	  components that Tomcat makes available to web applications automatically,
+	  plus anything that you explicitly added.
+	-->
+	<path id="project.classpath">
+		<!--<pathelement location="${some.jar}"/>-->
+		<fileset dir="${lib.dir}">
+			<include name="*.jar"/>
+		</fileset>
+	</path>
+
+    <!-- Clean build and dist -->
+    <target name="clean">
+    	<delete dir="${build.dir}"/>
+    	<delete dir="${build.onejar.dir}"/>
+    	<delete dir="${dist.dir}"/>
+    </target>
+
+	<!-- No default Target -->
+    <target name="all" depends="jar">
+    </target>
+
+	<!-- init -->
+    <target name="init" depends="">
+    </target>
+    
+	<!-- Target to create files to store on the Web site -->
+    <target name="dist" depends="compile">
+    	<mkdir dir="${dist.dir}"/>
+    	<!-- Bundle all the sources and build script in one file -->
+    	<zip zipfile="${dist.dir}/${app.name}-${app.version}.zip" basedir="${src.dir}" includes="${package.names}/**">
+			<fileset dir="${basedir}" includes="README"/>   
+			<fileset dir="${basedir}" includes="LICENSE"/>   
+			<fileset dir="${basedir}" includes="TODO"/>   
+			<fileset dir="${basedir}" includes="Changelog"/>   
+			<fileset dir="${basedir}" includes="build.xml"/>   
+			<fileset dir="${basedir}" includes="build.properties"/>   
+			<fileset dir="${basedir}" includes="wowc.jsmooth"/>   
+			<fileset dir="${basedir}" includes="wowc.bat"/>   
+			<fileset dir="${basedir}" includes="**/lib/**"/>   
+			<fileset dir="${basedir}" includes="**/test/**"/>   
+			<fileset dir="${basedir}" includes="**/properties/**"/>   
+		</zip>
+  		<!--<tar tarfile="${dist.dir}/project.tar" basedir="${src.dir}" includes="net/**" />-->
+      	<!--<gzip src="${dist.dir}/project.tar" zipfile="${dist.dir}/project.tar.gz" />-->
+    </target>
+    
+	<!-- Target to create channel archive -->
+    <target name="jar" depends="compile">
+		<mkdir dir="${dist.dir}"/>
+
+    	<jar destfile="${dist.dir}/${app.name}-${app.version}.jar">
+    		<!-- manifest="META-INF/MANIFEST.MF"-->
+			<fileset dir="${build.dir}"/>
+			<fileset dir="${basedir}" includes="README"/>   
+			<fileset dir="${basedir}" includes="LICENSE"/>   
+			<fileset dir="${lib.dir}" includes="*.jar"/>   
+			<fileset dir="${properties.dir}" includes="*.properties"/>   
+			<fileset dir="${images.dir}" includes="*.gif"/>   
+			<manifest>
+				<attribute name="Class-Path" value="${manifest.classpath}"/>
+				<attribute name="Built-By" value="${app.developer}, ${app.company}"/>
+				<!--<attribute name="Main-Class" value="${main.class}"/>-->
+			</manifest>
+		</jar>
+    	
+        <copy todir="${build.dir}">
+            <fileset dir="${properties.dir}">
+                <include name="*.properties"/>
+            </fileset>
+            <fileset dir="${images.dir}">
+                <include name="*.gif"/>
+            </fileset>
+        </copy>
+    </target>
+    
+	<!-- Target to create channel archive -->
+    <target name="jar-nolibs" depends="compile">
+		<mkdir dir="${dist.dir}"/>
+
+    	<delete file="${dist.dir}/${app.name}-${app.version}.jar"/>
+    	<jar destfile="${dist.dir}/${app.name}-${app.version}.jar">
+    		<!-- manifest="META-INF/MANIFEST.MF"-->
+			<fileset dir="${build.dir}"/>
+			<fileset dir="${basedir}" includes="README"/>   
+			<fileset dir="${basedir}" includes="LICENSE"/>   
+			<fileset dir="${lib.dir}" includes="*.jar"/>   
+			<fileset dir="${properties.dir}" includes="*.properties"/>   
+			<fileset dir="${images.dir}" includes="*.gif"/>   
+			<manifest>
+				<!--<attribute name="Class-Path" value="${manifest.classpath}"/>-->
+				<attribute name="Built-By" value="${app.developer}, ${app.company}"/>
+				<attribute name="Main-Class" value="${main.class}"/>
+			</manifest>
+		</jar>
+    	
+        <copy todir="${build.dir}">
+            <fileset dir="${properties.dir}">
+                <include name="*.properties"/>
+            </fileset>
+            <fileset dir="${images.dir}">
+                <include name="*.gif"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="onejar" depends="jar-nolibs">
+		<mkdir dir="${build.onejar.dir}"/>
+
+		<unjar src="${lib.dir}/onejar/one-jar-boot-0.95.jar" dest="${build.onejar.dir}"/>
+		<delete file="${build.onejar.dir}/boot-manifest.mf"/>
+		<mkdir dir="${build.onejar.dir}/main" />
+		<mkdir dir="${build.onejar.dir}/lib" />
+
+    	<copy tofile="${build.onejar.dir}/main/main.jar"
+		      file="${dist.dir}/${app.name}-${app.version}.jar" />
+
+    	<copy todir="${build.onejar.dir}/lib">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar"/>
+			</fileset>
+		</copy>
+
+    	<jar destfile="${dist.dir}/${app.name}-${app.version}-onejar.jar"
+			 manifest="${build.onejar.dir}/META-INF/MANIFEST.MF">
+    		<!-- manifest="META-INF/MANIFEST.MF"-->
+			<fileset dir="${build.onejar.dir}"/>
+			<fileset dir="${basedir}" includes="README"/>   
+			<fileset dir="${basedir}" includes="LICENSE"/>   	
+		</jar>
+	</target>
+    
+	<!-- Target to create channel archive -->
+    <target name="jsmooth-jar" depends="compile">
+		<mkdir dir="${dist.dir}"/>
+    	
+        <copy todir="${build.dir}">
+            <fileset dir="${properties.dir}">
+                <include name="*.properties"/>
+            </fileset>
+            <fileset dir="${images.dir}">
+                <include name="*.gif"/>
+            </fileset>
+        </copy>
+    	
+		<!-- unjar all libs into build dir -->
+		<unjar src="${lib.dir}/log4j-1.2.9.jar" dest="${build.dir}"/>
+		<unjar src="${lib.dir}/jakarta-oro-2.0.8.jar" dest="${build.dir}"/>
+		<unjar src="${lib.dir}/commons-logging.jar" dest="${build.dir}"/>
+		<unjar src="${lib.dir}/commons-httpclient-2.0.2.jar" dest="${build.dir}"/>
+
+		<!-- jar everything -->
+    	<jar destfile="${dist.dir}/${app.name}-${app.version}.jar">
+			<fileset dir="${build.dir}"/>
+			<fileset dir="${basedir}" includes="README"/>   
+			<fileset dir="${basedir}" includes="LICENSE"/>   
+			<fileset dir="${basedir}/properties" includes="**"/>   
+			<manifest>
+				<attribute name="Built-By" value="David Castro (arimus)"/>
+			</manifest>
+		</jar>
+    </target>
+	
+    <target name="compile" depends="init">
+        <mkdir dir="${build.dir}"/>
+		<javac srcdir="${src.dir}"
+			  destdir="${build.dir}"
+				debug="${compile.debug}"
+		  deprecation="${compile.deprecation}"
+			 optimize="${compile.optimize}">
+        <classpath refid="project.classpath"/>
+        </javac>
+    </target>
+
+    <target name="junit-compile">
+        <mkdir dir="${build.dir}/test/classes"/>
+		<javac srcdir="${junit.dir}"
+			  destdir="${build.dir}/test/classes"
+				debug="${compile.debug}"
+		  deprecation="${compile.deprecation}"
+			 optimize="${compile.optimize}">
+        <classpath refid="project.classpath"/>
+        </javac>
+    </target>
+
+	<target name="junit-tests" depends="junit-test">
+		<!-- just for those who want to type plural "tests"-->
+	</target>
+
+	<target name="junit-test" depends="jar,junit-compile">
+		<junit printsummary="yes" haltonfailure="yes">
+			<classpath>
+				<pathelement path="${dist.dir}/${app.name}-${app.version}.jar"/>
+				<fileset dir="${lib.dir}">
+					<include name="*.jar"/>
+				</fileset>
+				<pathelement path="${build.dir}/test/classes"/>
+			</classpath>
+
+			<formatter type="plain"/>
+
+			<!--
+			<test name="my.test.TestCase" haltonfailure="no" outfile="result">
+				<formatter type="xml"/>
+			</test>-->
+
+			<batchtest fork="yes" todir="${junit.report.dir}">
+				<fileset dir="${build.dir}/test/classes">
+					<include name="**"/>
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+	<target name="run" depends="jar">
+		<echo message="Running ${class} ${args}"/>
+		<java fork="true" dir="${basedir}" classname="${class}">
+			<arg line="${args}"/>
+			<classpath>
+				<pathelement path="${dist.dir}/${app.name}-${app.version}.jar"/>
+				<fileset dir="${lib.dir}">
+					<include name="*.jar"/>
+				</fileset>
+			</classpath>
+		</java>
+	</target>
+
+    <target name="javadoc" depends="compile"
+            description="Create Javadoc API documentation">
+
+        <mkdir dir="${dist.dir}/docs/api"/>
+        <javadoc sourcepath="src"
+               classpathref="project.classpath"
+                    destdir="${dist.dir}/docs/api"
+               packagenames="${package.names}"
+                     access="public"
+                     author="true"
+                    version="true"
+                windowtitle="${app.name} ${app.version} API Documentation">
+      <doctitle><![CDATA[${app.name} ${app.version}<br/>API Documentation]]></doctitle>
+      <header><![CDATA[${app.name} ${app.version}<br/>API Documentation]]></header>
+    </javadoc>
+
+  </target>
+
+	<!-- Add a new target here -->
+	
+</project>
