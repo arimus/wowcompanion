@@ -1,4 +1,4 @@
-WoWCompanion (TM) v0.0.7
+WoWCompanion (TM) v0.0.9
 Copyright (C) 2004-2005, David Castro
 Contact:  David Castro <arimus@users.sourceforge.net>
 
@@ -20,8 +20,26 @@ this appplication to become much cleaner, more robust, and featureful over
 time.  The more you show interest in this application/nudge me, the more
 likely that will be the case.  Comments and feedback greatly welcome.
 
+** NOTICE **
+The preferred mechanism for keeping WoW Companion up-to-date is using the 
+Java Web Start version located at:
 
-Requirements:
+  http://apps.wowcompanion.net/wowcompanion/files/launch.jnlp
+  
+If you have installed a Sun Java 2 JRE 1.4.1 or greater, then Java Web Start 
+is already installed.  Other JDKs may or may not have Java Web Start bundled.
+If your JRE does not provide Java Web Start functionality, you can install
+OpenJNLP (http://openjnlp.nanode.org/).
+
+The releases on SourceForge may lag a bit behind the Java Web Start version
+if the developers of WoW Companion are pinched for time.
+
+Requirements to run:
+  Java 2 JRE 1.4+
+  Character Profiler >= 0.983 (http://www.cethinchimera.com/)
+  World of Warcraft =)
+
+Requirements to build:
   Java 2 SDK 1.4+
   Apache Ant 1.4+
   Jakarta ORO 2.0.x (bundled)

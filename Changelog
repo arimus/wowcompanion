@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+Changes since 0.0.8
+	* new version that uploads to wowcompanion.net by default
+
 Changes since 0.0.7
 	* new version due to issue with file release system
 

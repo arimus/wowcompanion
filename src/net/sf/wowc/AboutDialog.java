@@ -77,7 +77,7 @@ public class AboutDialog extends JDialog {
 		getContentPane().add(textArea, gridBagConstraints);
 		Font font = new Font("Arial", Font.PLAIN, 10);
 		textArea.setFont(new Font("Arial", Font.PLAIN, 10));
-		textArea.setText("WoWCompanion v0.1.8\nCreated by arimus & ulic\nCouncil of Thoyr, Lightbringer\n\n(C) Copyright David Castro, 2005\nAll rights reserved");
+		textArea.setText("WoWCompanion v0.1.9\nCreated by arimus & ulic\nCouncil of Thoyr, Lightbringer\n\n(C) Copyright David Castro, 2005\nAll rights reserved");
 		textArea.setEditable(false);
 
 		closeButton = new JButton();
