@@ -12,7 +12,7 @@
 <iconLocation>images\wowc_icon.gif</iconLocation>
 <initialMemoryHeap>-1</initialMemoryHeap>
 <jarLocation>dist\WoWCompanion-0.1.7.jar</jarLocation>
-<mainClassName>org.geekoffice.wowcompanion.WoWCompanion</mainClassName>
+<mainClassName>net.sf.wowc.WoWCompanion</mainClassName>
 <maximumMemoryHeap>-1</maximumMemoryHeap>
 <maximumVersion></maximumVersion>
 <minimumVersion>1.4</minimumVersion>
