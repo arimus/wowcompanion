@@ -4,6 +4,8 @@ Changelog
 Changes since 0.1.9
 	* logging added with a menu item to enable debug logging
 	* fixed tab order/default focus in the UI
+	* changed error message when WoW directory found, but no
+	  accounts are found
 
 Changes since 0.1.8
 	* new version that uploads to wowcompanion.net by default
