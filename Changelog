@@ -1,12 +1,16 @@
 Changelog
 ---------
 
-Changes since 0.0.8
+Changes since 0.1.9
+	* logging added with a menu item to enable debug logging
+	* fixed tab order/default focus in the UI
+
+Changes since 0.1.8
 	* new version that uploads to wowcompanion.net by default
 
-Changes since 0.0.7
+Changes since 0.1.7
 	* new version due to issue with file release system
 
-Changes since 0.0.6
+Changes since 0.1.6
 	* added server configuration dialog
 
