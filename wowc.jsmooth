@@ -6,12 +6,11 @@
 <JVMSearchPath>jdkpath</JVMSearchPath>
 <JVMSearchPath>exepath</JVMSearchPath>
 <JVMSearchPath>jview</JVMSearchPath>
-<arguments></arguments>
 <embeddedJar>true</embeddedJar>
-<executableName>wowcompanion-0.1.7.exe</executableName>
+<executableName>wowcompanion-0.1.8.exe</executableName>
 <iconLocation>images\wowc_icon.gif</iconLocation>
 <initialMemoryHeap>-1</initialMemoryHeap>
-<jarLocation>dist\WoWCompanion-0.1.7.jar</jarLocation>
+<jarLocation>dist\wowcompanion-0.1.8.jar</jarLocation>
 <mainClassName>net.sf.wowc.WoWCompanion</mainClassName>
 <maximumMemoryHeap>-1</maximumMemoryHeap>
 <maximumVersion></maximumVersion>

@@ -1,6 +1,9 @@
 Changelog
 ---------
 
+Changes since 0.0.7
+	* new version due to issue with file release system
+
 Changes since 0.0.6
 	* added server configuration dialog
 
