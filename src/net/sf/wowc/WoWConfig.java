@@ -117,7 +117,7 @@ public class WoWConfig {
 		if (config.containsKey(key)) {
 			return config.getProperty(key);
 		}
-		log.error("WoWConfig: could not find property '"+key+"'");
+		log.debug("WoWConfig: could not find property '"+key+"'");
 		throw new WoWConfigPropertyNotFoundException();
 	}
 	
@@ -127,7 +127,7 @@ public class WoWConfig {
 		if (preferences.containsKey(key)) {
 			return preferences.getProperty(key);
 		}
-		log.error("WoWConfig: could not find preference '"+key+"'");
+		log.debug("WoWConfig: could not find preference '"+key+"'");
 		throw new WoWConfigPropertyNotFoundException();
 	}
 	
