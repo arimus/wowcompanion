@@ -8,10 +8,10 @@
 <JVMSearchPath>jview</JVMSearchPath>
 <arguments></arguments>
 <embeddedJar>true</embeddedJar>
-<executableName>wowcompanion-0.1.9.exe</executableName>
+<executableName>wowcompanion-0.1.10.exe</executableName>
 <iconLocation>images\wowc_icon.gif</iconLocation>
 <initialMemoryHeap>-1</initialMemoryHeap>
-<jarLocation>dist\wowcompanion-0.1.9.jar</jarLocation>
+<jarLocation>dist\wowcompanion-0.1.10.jar</jarLocation>
 <mainClassName>net.sf.wowc.WoWCompanion</mainClassName>
 <maximumMemoryHeap>-1</maximumMemoryHeap>
 <maximumVersion></maximumVersion>
