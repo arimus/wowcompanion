@@ -161,6 +161,7 @@
 
 		<unjar src="${lib.dir}/onejar/one-jar-boot-0.95.jar" dest="${build.onejar.dir}"/>
 		<delete file="${build.onejar.dir}/boot-manifest.mf"/>
+    	<delete dir="${build.onejar.dir}/doc"/>
 		<mkdir dir="${build.onejar.dir}/main" />
 		<mkdir dir="${build.onejar.dir}/lib" />
 
