@@ -30,6 +30,8 @@ Requirements:
   Commons HttpClient 2.0.2 (bundled)
   One-Jar 0.95 (bundled)
   JSmooth 0.9.7 (if you to build an .exe)
+  Character Profiler >= 0.983 (http://www.cethinchimera.com/)
+  World of Warcraft =)
 
 Building:
   type 'ant'
