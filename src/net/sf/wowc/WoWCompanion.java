@@ -584,6 +584,7 @@ public class WoWCompanion {
                     } else {
                    		statusLabel.setForeground(new Color(0, 150, 0));
         				statusLabel.setText("Success");
+        				log.debug("WoWCompanion: successfully uploaded data");
                     }
                 }
             }
