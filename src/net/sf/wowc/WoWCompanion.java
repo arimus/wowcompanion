@@ -67,7 +67,7 @@ public class WoWCompanion {
     private static WoWConfig config;
     private static String defaultBaseDirPath = "";
     private static String baseDirPath = defaultBaseDirPath;
-    private static String accountPath = "WTF\\Account";
+    private static String accountPath = "WTF" + File.separator + "Account";
     private static String savedVarFileName = "";
     private static String selectedAccountName = "";
     private static String savedUsername = "";
@@ -103,7 +103,7 @@ public class WoWCompanion {
 	{
 		//Set Look & Feel
 		try {
-			javax.swing.UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+			javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -190,8 +190,20 @@ public class WoWCompanion {
 				log.debug("WoWCompanion: setting basedir to '"+defaultBaseDirPath+"'");
 				baseDirPath = defaultBaseDirPath;
 			}
+		} catch (WoWConfigPropertyNotFoundException e) {
+			// FIXME - show an error dialog here, then exit
+			log.error("WoWCompanion: failed to load default properties", e);
+		}
+
+		try {
 			accountPath = config.getProperty("account.path");
 			log.debug("WoWCompanion: setting account path to '"+accountPath+"'");
+		} catch (WoWConfigPropertyNotFoundException e) {
+			// FIXME - show an error dialog here, then exit
+			log.error("WoWCompanion: failed to load default properties", e);
+		}
+
+		try {
 		    savedVarFileName = config.getProperty("data.filename");
 			log.debug("WoWCompanion: setting saved var filename to '"+savedVarFileName+"'");
 		} catch (WoWConfigPropertyNotFoundException e) {
@@ -696,11 +708,16 @@ public class WoWCompanion {
                 if (files[i].isDirectory()) {
                     if (new File(files[i].getAbsolutePath() + 
 							File.separator +
-							savedVarFileName).isFile()) {
+							savedVarFileName).isFile()) 
+					{
                     	log.debug("WoWCompanion: found account '"+files[i].toString()+"'");
                         validAccountDirs.add(files[i]);
-                    }
-                }
+                    } else {
+						log.debug("WoWCompanion: '" + files[i].getAbsolutePath() + File.separator + savedVarFileName + "' is not a valid file");
+					}
+                } else {
+					log.debug("WoWCompanion: '" + files[i] + "' is not a valid account directory");
+				}
             }
 
             if (validAccountDirs.size() < 1) {

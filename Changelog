@@ -1,6 +1,12 @@
 Changelog
 ---------
 
+Changes since 0.1.10
+	* the default platform look and feel is fixed, was hard coded to windows
+	* the account directory "WTF\Account" is now correct for platforms other
+	  than Windows.  The separator was previsouly hard-coded, which does not
+	  work on Linux/OSX
+
 Changes since 0.1.9
 	* logging added with a menu item to enable debug logging
 	* fixed tab order/default focus in the UI
