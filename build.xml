@@ -136,7 +136,7 @@
 			<fileset dir="${build.dir}"/>
 			<fileset dir="${basedir}" includes="README"/>   
 			<fileset dir="${basedir}" includes="LICENSE"/>   
-			<fileset dir="${lib.dir}" includes="*.jar"/>   
+			<!--<fileset dir="${lib.dir}" includes="*.jar"/>-->
 			<fileset dir="${properties.dir}" includes="*.properties"/>   
 			<fileset dir="${images.dir}" includes="*.gif"/>   
 			<manifest>
@@ -172,6 +172,9 @@
 			<fileset dir="${lib.dir}">
 				<include name="*.jar"/>
 			</fileset>
+            <fileset dir="${properties.dir}">
+                <include name="*.properties"/>
+            </fileset>
 		</copy>
 
     	<jar destfile="${dist.dir}/${app.name}-${app.version}-onejar.jar"
