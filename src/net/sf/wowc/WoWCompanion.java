@@ -17,6 +17,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,12 +29,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-
-import net.sf.wowc.util.*;
-
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -42,11 +42,17 @@ import javax.swing.JPasswordField;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.Timer;
+import javax.swing.JCheckBox;
 import java.awt.Cursor;
+import java.awt.event.MouseAdapter;
 
 import org.apache.oro.text.perl.Perl5Util;
-import javax.swing.JCheckBox;
-import java.awt.event.MouseAdapter;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Level;
+
+import net.sf.wowc.util.*;
+import javax.swing.JCheckBoxMenuItem;
 
 /**
  * @author Administrator
@@ -55,6 +61,8 @@ import java.awt.event.MouseAdapter;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class WoWCompanion {
+	private static Logger log = LogManager.getLogger(WoWCompanion.class);
+	private static String loglevel = "INFO";
 	public final static int ONE_SECOND = 1000;
     private static WoWConfig config;
     private static String defaultAccountDirPath = "";
@@ -88,6 +96,8 @@ public class WoWCompanion {
 	private UploadTask uploadTask;    
     private Timer timer;
 	private JCheckBox savePasswordCheckBox;
+	private JCheckBoxMenuItem debugMenuItem;
+
 
 	{
 		//Set Look & Feel
@@ -100,10 +110,10 @@ public class WoWCompanion {
 	
 	public static void main(String args[]) {
 		try {
-			System.out.println("loading config");
+			log.debug("WoWCompanion: loading configuration");
 			config = new WoWConfig();
 		} catch (WoWConfigException e) {
-			System.err.println("could not load configuration");
+			log.error("WoWCompanion: could not load configuration");
 		}
 		
 		try {
@@ -114,7 +124,7 @@ public class WoWCompanion {
 			// show our window
 			WoWCompanion.frame.setVisible(true);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("WoWCompanion: error creating UI", e);
 		}
 	}
 
@@ -125,45 +135,68 @@ public class WoWCompanion {
 	}
 
 	public void initConfig() {
-		// load default properties
-		try {
-			defaultAccountDirPath = config.getProperty("basedir.default");
-		    accountDirPath = defaultAccountDirPath;
-		    savedVarFileName = config.getProperty("data.filename");
-		} catch (WoWConfigPropertyNotFoundException e) {
-			// FIXME - show an error dialog here, then exit
-			System.err.println("property not found: "+e);
-		}
-		
+		log.debug("WoWCompanion: loading preferences");
 		// load preferences
 		try {
 			Map m = config.getPreferences();
+
+			if (m.containsKey("loglevel")) {
+				// set the level to debug if needed
+				loglevel = config.getPreference("loglevel");
+				if (loglevel.equals("DEBUG")) {
+					log.debug("WoWCompanion: setting log level to DEBUG");
+					log.setLevel(Level.DEBUG);
+				} else {
+					log.debug("WoWCompanion: setting log level to INFO");
+				}
+			} else {
+				log.debug("WoWCompanion: setting log level to INFO");
+			}
 			
 			if (m.containsKey("basedir")) {
 				accountDirPath = config.getPreference("basedir");
+				log.debug("WoWCompanion: setting account dir to '"+accountDirPath+"'");
 			}
 			if (m.containsKey("account.selected")) {
 				selectedAccountName = config.getPreference("account.selected");
+				log.debug("WoWCompanion: setting selected account name to '"+selectedAccountName+"'");
 			}
 			
 			Iterator i = m.keySet().iterator();
 			Perl5Util util = new Perl5Util();
 			if (m.containsKey("account."+selectedAccountName+".username")) {
 				savedUsername = (String)m.get("account."+selectedAccountName+".username");
+				log.debug("WoWCompanion: setting username to '"+savedUsername+"'");
 			}
 			while (i.hasNext()) {
 				String key = (String)i.next();
 				if (util.match("/account."+selectedAccountName+".password/", key)) {
 					savedPassword = (String)m.get("account."+selectedAccountName+".password");
+					log.debug("WoWCompanion: setting password to '"+savedPassword+"'");
 				}
 			}
 		} catch (WoWConfigPropertyNotFoundException e) {
 			// FIXME - show an error dialog here, then exit
-			System.err.println("property not found: "+e);
+			log.error("WoWCompanion: failed to load preferences", e);
+		}
+		
+		log.debug("WoWCompanion: loading default properties");
+		// load default properties
+		try {
+			defaultAccountDirPath = config.getProperty("basedir.default");
+		    accountDirPath = defaultAccountDirPath;
+			log.debug("WoWCompanion: setting account dir to default '"+accountDirPath+"'");
+		    savedVarFileName = config.getProperty("data.filename");
+			log.debug("WoWCompanion: setting saved var filename to '"+savedVarFileName+"'");
+		} catch (WoWConfigPropertyNotFoundException e) {
+			// FIXME - show an error dialog here, then exit
+			log.error("WoWCompanion: failed to load default properties", e);
 		}
 	}
 
 	private void initialize() {
+		log.debug("WoWCompanion: initializing interface");
+		
 		GridBagConstraints gridBagConstraints_2;
 		JMenuItem configureServerMenuItem;
 		frame = new JFrame();
@@ -239,6 +272,41 @@ public class WoWCompanion {
 		menuBar.add(helpMenu);
 		helpMenu.setText("Help");
 
+		debugMenuItem = new JCheckBoxMenuItem();
+		debugMenuItem.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+			}
+			public void mouseEntered(MouseEvent e) {
+			}
+			public void mouseExited(MouseEvent e) {
+			}
+			public void mousePressed(MouseEvent e) {
+			}
+			public void mouseReleased(MouseEvent e) {
+				if (debugMenuItem.isSelected()) {
+					loglevel = "DEBUG";
+					log.info("WoWCompanion: setting loglevel to DEBUG");
+					log.setLevel(Level.DEBUG);
+				} else {
+					loglevel = "INFO";
+					log.info("WoWCompanion: setting loglevel to INFO");
+					log.setLevel(Level.INFO);
+				}
+				
+	            // save the debug flag to the configuration
+	            try {
+	                config.setPreference("loglevel", loglevel);
+	                log.info("WoWCompanion: saving loglevel to preferences");
+	            	config.savePreferences();
+	            } catch (IOException ee) {
+	    			log.error("WoWCompanion: couldn't save preferences", ee);
+	            }
+
+			}
+		});
+		helpMenu.add(debugMenuItem);
+		debugMenuItem.setText("Enable Debug");
+
 		aboutMenuItem = new JMenuItem();
 		aboutMenuItem.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {
@@ -262,6 +330,7 @@ public class WoWCompanion {
 		aboutMenuItem.setText("About");
 
 		label = new JLabel();
+		label.setFocusable(false);
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
 		gridBagConstraints.anchor = GridBagConstraints.EAST;
@@ -285,9 +354,9 @@ public class WoWCompanion {
 		frame.getContentPane().add(accountSelect, gridBagConstraints);
 
 		browseButton = new JButton();
+		accountSelect.setNextFocusableComponent(browseButton);
 		browseButton.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {
-				System.out.println("browse button clicked");
 				browseHandler(e);
 			}
 			public void mouseEntered(MouseEvent e) {
@@ -295,11 +364,9 @@ public class WoWCompanion {
 			public void mouseExited(MouseEvent e) {
 			}
 			public void mousePressed(MouseEvent e) {
-				System.out.println("browse button pressed");
 				//progressBar.setVisible(true);
 			}
 			public void mouseReleased(MouseEvent e) {
-				System.out.println("browse button released");
 				//progressBar.setVisible(false);
 			}
 		});
@@ -312,6 +379,7 @@ public class WoWCompanion {
 		browseButton.setText("Browse");
 		
 		usernameLabel = new JLabel();
+		usernameLabel.setFocusable(false);
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.anchor = GridBagConstraints.EAST;
 		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
@@ -322,6 +390,7 @@ public class WoWCompanion {
 		usernameLabel.setText("Username:");
 
 		usernameField = new JTextField();
+		browseButton.setNextFocusableComponent(usernameField);
 		usernameField.setMinimumSize(new Dimension(150, 20));
 		usernameField.setMaximumSize(new Dimension(150, 20));
 		usernameField.setPreferredSize(new Dimension(150, 20));
@@ -332,7 +401,7 @@ public class WoWCompanion {
 		gridBagConstraints.gridy = 1;
 		gridBagConstraints.gridx = 1;
 		frame.getContentPane().add(usernameField, gridBagConstraints);
-
+		
 		savePasswordCheckBox = new JCheckBox();
 		gridBagConstraints_2 = new GridBagConstraints();
 		gridBagConstraints_2.gridy = 1;
@@ -341,6 +410,7 @@ public class WoWCompanion {
 		savePasswordCheckBox.setText("save pass");
 
 		passwordLabel = new JLabel();
+		passwordLabel.setFocusable(false);
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
 		gridBagConstraints.anchor = GridBagConstraints.EAST;
@@ -350,6 +420,9 @@ public class WoWCompanion {
 		passwordLabel.setText("Password:");
 
 		passwordField = new JPasswordField();
+		usernameField.setNextFocusableComponent(passwordField);
+		passwordField.setNextFocusableComponent(savePasswordCheckBox);
+		usernameField.setNextFocusableComponent(passwordField);
 		passwordField.setMinimumSize(new Dimension(150, 20));
 		passwordField.setMaximumSize(new Dimension(150, 20));
 		passwordField.setPreferredSize(new Dimension(150, 20));
@@ -361,10 +434,25 @@ public class WoWCompanion {
 		gridBagConstraints.gridx = 1;
 		frame.getContentPane().add(passwordField, gridBagConstraints);
 
+		passwordField.addKeyListener(new KeyListener() {
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					submitHandler();
+				}
+			}
+			public void keyTyped(KeyEvent e) { }
+			public void keyReleased(KeyEvent e) { }
+		}
+		);
+
+		
 		uploadButton = new JButton();
-		uploadButton.addMouseListener(new MouseListener() {
+		passwordField.setNextFocusableComponent(uploadButton);
+		uploadButton.setNextFocusableComponent(accountSelect);
+		savePasswordCheckBox.setNextFocusableComponent(uploadButton);
+		uploadButton.addMouseListener(new MouseListener() {			
 			public void mouseClicked(MouseEvent e) { 
-				submitHandler(e);
+				submitHandler();
 			}
 			public void mouseEntered(MouseEvent e) {
 			}
@@ -375,6 +463,19 @@ public class WoWCompanion {
 			public void mouseReleased(MouseEvent e) {
 			}
 		});
+		uploadButton.addKeyListener(new KeyListener() {
+			public void keyPressed(KeyEvent e) {
+				if ((e.getKeyCode() == KeyEvent.VK_ENTER) ||
+					(e.getKeyCode() == KeyEvent.VK_SPACE))
+				{
+					submitHandler();
+				}
+				
+			}
+			public void keyTyped(KeyEvent e) { }
+			public void keyReleased(KeyEvent e) { }
+		}
+		);
 		uploadButton.setPreferredSize(new Dimension(75, 25));
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
@@ -384,6 +485,7 @@ public class WoWCompanion {
 		uploadButton.setText("Upload");
 
 		imageLabel = new JLabel();
+		imageLabel.setFocusable(false);
 		imageLabel.setPreferredSize(new Dimension(50, 18));
 		imageLabel.setMinimumSize(new Dimension(50, 18));
 		imageLabel.setIcon(createImageIcon("/wowc.gif", "WoWC"));
@@ -395,6 +497,7 @@ public class WoWCompanion {
 		frame.getContentPane().add(imageLabel, gridBagConstraints_1);
 		
 		statusLabel = new JLabel("", JLabel.CENTER);
+		statusLabel.setFocusable(false);
 		statusLabel.setMaximumSize(new Dimension(150, 20));
 		statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		gridBagConstraints_1 = new GridBagConstraints();
@@ -406,6 +509,7 @@ public class WoWCompanion {
 		statusLabel.setMinimumSize(new Dimension(150, 20));
 
 		progressBar = new JProgressBar();
+		progressBar.setFocusable(false);
 		progressBar.setMaximumSize(new Dimension(60, 8));
 		progressBar.setMinimumSize(new Dimension(60, 8));
 		progressBar.setPreferredSize(new Dimension(60, 8));
@@ -420,6 +524,8 @@ public class WoWCompanion {
 	}
 	
 	public void postInitialize() {
+		log.debug("WoWCompanion: initializing second stage");
+		
 		fileChooser = new JFileChooser();
  		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.anchor = GridBagConstraints.CENTER;
@@ -447,7 +553,6 @@ public class WoWCompanion {
 		}
 		if (savedPassword != null && !savedPassword.equals("")) {
 			passwordField.setText("********");
-			//savePasswordMenuItem.setSelected(true);
 			savePasswordCheckBox.setSelected(true);
 		}
 		updateAccountList();
@@ -483,37 +588,51 @@ public class WoWCompanion {
                 }
             }
         });
+
+        // make usernameField get the focus whenever frame is activated.
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowActivated(WindowEvent e) {
+                usernameField.requestFocusInWindow();
+            }
+        });
+        
+        // set the initial focus on the password box
+	    //usernameField.setFocusable(true);
+		//if (!usernameField.isRequestFocusEnabled()) { 
+	    //	usernameField.setRequestFocusEnabled(true); 
+	    //}
+	    //usernameField.requestFocus();
+	    //usernameField.requestFocusInWindow();
 	}
 	
     private void fileChooserActionPerformed(java.awt.event.ActionEvent evt) {
-    	System.out.println("fileChooserActionPerformed");
+    	log.debug("WoWCompanion: fileChooserActionPerformed");
     }
     
 	// when our "Browse" button gets clicked
     private void browseHandler(java.awt.event.MouseEvent evt) {
-    	System.out.println("browse clicked, launching filechooser");
+    	log.debug("WoWCompanion: browse clicked, launching filechooser");
         fileChooser.setVisible(true);
     	int retval = fileChooser.showOpenDialog(frame.getContentPane());
-    	System.out.println("filechooser retvalue: "+retval);
+    	log.debug("WoWCompanion: filechooser retvalue: "+retval);
     	
         if (retval == JFileChooser.APPROVE_OPTION) {
-        	System.out.println("");
             File theFile = fileChooser.getSelectedFile();
             if (theFile != null) {
                 if (theFile.isDirectory()) {
                     // set the directory here
                     accountDirPath = fileChooser.getSelectedFile().getAbsolutePath();
-                    System.out.println("setting accountDir to "+fileChooser.getSelectedFile().getAbsolutePath());
+                    log.debug("WoWCompanion: setting accountDir to "+fileChooser.getSelectedFile().getAbsolutePath());
                     statusLabel.setForeground(new Color(0, 150, 0));
                     statusLabel.setText("Valid Account Dir");
                 } else {
-                	System.out.println("file is not a directory");
+                	log.debug("WoWCompanion: file is not a directory");
                 }
             } else {
-            	System.out.println("no file selected");
+            	log.debug("WoWCompanion: no file selected");
             }
         } else {
-        	System.out.println("didn't approve");
+        	log.debug("WoWCompanion: didn't approve");
         }
 
         retval = 0;
@@ -523,6 +642,7 @@ public class WoWCompanion {
 
     // update the account list
     private void updateAccountList() {
+    	log.debug("WoWCompanion: updating account list");
     	accountSelect.removeAllItems();
 	    try {
 	        Collection dirs = getAccountDirectories();
@@ -535,6 +655,7 @@ public class WoWCompanion {
 	            }
 	        }
 	    } catch (FileNotFoundException e) {
+	    	log.debug("WoWCompanion: invalid account directory selected", e);
 	        accountSelect.addItem("- INVALID ACCOUNT DIR -");
             statusLabel.setForeground(Color.RED);
             statusLabel.setText("Invalid Account Dir");
@@ -543,6 +664,8 @@ public class WoWCompanion {
     
     
 	private Collection getAccountDirectories() throws FileNotFoundException {
+		log.debug("WoWCompanion: getting account directories");
+		
         File accountDir = new File(accountDirPath);
         ArrayList validAccountDirs = new ArrayList();
         if (accountDir.isDirectory()) {
@@ -551,30 +674,29 @@ public class WoWCompanion {
             for (int i=0; i < files.length; i++) {
                 if (files[i].isDirectory()) {
                     if (new File(files[i].getAbsolutePath() + File.separator + savedVarFileName).isFile()) {
+                    	log.debug("WoWCompanion: found account '"+files[i].toString()+"'");
                         validAccountDirs.add(files[i]);
                     }
                 }
             }
 
             if (validAccountDirs.size() < 1) {
+            	log.error("WoWCompanion: no valid account directories in WoW directory '"+accountDirPath+"'");
                 throw new FileNotFoundException("no valid account directories in WoW directory '"+accountDirPath+"'");
             }
 		} else {
-			System.err.println("WoWParser: couldn't find valid WoW account directory");
+			log.error("WoWCompanion: couldn't find valid WoW account directory");
             throw new FileNotFoundException("no valid account directories");
 		}
         return validAccountDirs;                                
     }
 	
     // when out "Submit" button gets clicked
-    private void submitHandler(java.awt.event.MouseEvent evt) {
-        // FIXME - check valid WoW directory, parse config, MD5 password, send to server
-
+    private void submitHandler() {
     	try {
 			config = new WoWConfig();
 		} catch (WoWConfigException e) {
-			// ugg
-			e.printStackTrace(System.err);
+			log.error("WoWCompanion: failed to load configuration", e);
 		}
 
         String tmp = "";
@@ -592,9 +714,9 @@ public class WoWCompanion {
             } else {
             	hashedPassword = MD5.getMD5(password.getBytes("UTF8"));
             }
-            System.out.println("got username: '"+usernameField.getText()+"'");
-            System.out.println("got password: '"+new String(passwordField.getPassword())+"'");
-            System.out.println("hashed password is: '"+hashedPassword+"'");
+            log.debug("WoWCompanion: got username: '"+usernameField.getText()+"'");
+            log.debug("WoWCompanion: got password: '"+new String(passwordField.getPassword())+"'");
+            log.debug("WoWCompanion: hashed password is: '"+hashedPassword+"'");
             
             // save the selected account information to preferences
             try {
@@ -606,37 +728,31 @@ public class WoWCompanion {
                 {
                 	savedPassword = hashedPassword;
                 	config.setPreference("account."+accountName+".password", savedPassword);
-                	System.out.println("saving password '"+savedPassword+"'");
+                	log.debug("WoWCompanion: saving password '"+savedPassword+"'");
                 } else {
                 	config.setPreference("account."+accountName+".password", "");
                 	savedPassword = "";
                 	passwordField.setText("");
-                	System.out.println("clearing password ''");
+                	log.debug("WoWCompanion: clearing password");
                 }
+                
+                log.debug("WoWCompanion: saving preferences");
             	config.savePreferences();
             } catch (IOException e) {
-            	System.err.println("couldn't save preferences");
+    			log.error("WoWCompanion: couldn't save preferences", e);
             }
             
             String filename = accountDirPath + File.separator + 
                               accountName + File.separator + 
                               savedVarFileName;
             
-//            if (!f.isFile()) {
-//                throw new FileNotFoundException("file '"+f.getAbsolutePath()+ "' could not be found");
-//            }
-//            
-//            // send the data here
-//            String data = WoWParser.parse(f);
-       
-			// FIXME - send the data to the server
-//			System.out.println(data);
+			// send the data to the server
             if (((username != null) && !username.equals("") &&
 			     ((password != null) && 
 			      !password.equals("") && 
 				  !password.equals("********"))))
 			{
-           		System.out.println("using password");
+           		log.debug("WoWCompanion: using password");
            		
            		//WoWUploader.upload(data, username, hashedPassword);
         		uploadTask = new UploadTask(new String[] {filename, username, hashedPassword});
@@ -644,14 +760,13 @@ public class WoWCompanion {
                 frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 uploadTask.go();
                 timer.start();
-           		
            		//statusLabel.setForeground(new Color(0, 150, 0));
 				//statusLabel.setText("Success");
 			} else if (((username != null) && !username.equals("") &&
 	   			     ((savedPassword != null) && 
 	   			      !savedPassword.equals(""))))
    			{
-           		System.out.println("using saved password");
+           		log.debug("WoWCompanion: using saved password");
            		
            		//WoWUploader.upload(data, username, savedPassword);
         		uploadTask = new UploadTask(new String[] {filename, username, savedPassword});
@@ -665,17 +780,20 @@ public class WoWCompanion {
 	            //dialogText.setText("Please specify a valid username and password");
 	            //dialog.pack();
 	            //dialog.show();
+				log.error("WoWCompanion: invalid user/pass specified");
                 statusLabel.setForeground(Color.RED);
 				statusLabel.setText("Invalid user/pass");
 			}
         } catch (UnsupportedEncodingException e) {
             statusLabel.setForeground(Color.RED);
 			statusLabel.setText("Error hashing password");
+			log.error("WoWCompanion: failed to hash password");
         } catch (FileNotFoundException e) {
             //dialogText.setText("Error opening account: "+e);
             //dialog.pack();
-            //dialog.show();
+            //dialog.show()
 			statusLabel.setText("Error opening account dir");
+			log.error("WoWCompanion: error opening account directory");
 //		} catch (WoWParserException e) {
 //			System.err.println(e);
 //            statusLabel.setForeground(Color.RED);
@@ -702,7 +820,7 @@ public class WoWCompanion {
 	    if (imgURL != null) {
 	        return new ImageIcon(imgURL, description);
 	    } else {
-	        System.err.println("Couldn't find file: " + path);
+	        log.error("WoWCompanion: couldn't find icon file: " + path);
 	        return null;
 	    }
 	}
