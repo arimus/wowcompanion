@@ -65,8 +65,9 @@ public class WoWCompanion {
 	private static String loglevel = "INFO";
 	public final static int ONE_SECOND = 1000;
     private static WoWConfig config;
-    private static String defaultAccountDirPath = "";
-    private static String accountDirPath = defaultAccountDirPath;
+    private static String defaultBaseDirPath = "";
+    private static String baseDirPath = defaultBaseDirPath;
+    private static String accountPath = "WTF\\Account";
     private static String savedVarFileName = "";
     private static String selectedAccountName = "";
     private static String savedUsername = "";
@@ -154,8 +155,8 @@ public class WoWCompanion {
 			}
 			
 			if (m.containsKey("basedir")) {
-				accountDirPath = config.getPreference("basedir");
-				log.debug("WoWCompanion: setting account dir to '"+accountDirPath+"'");
+				baseDirPath = config.getPreference("basedir");
+				log.debug("WoWCompanion: setting basedir to '"+baseDirPath+"'");
 			}
 			if (m.containsKey("account.selected")) {
 				selectedAccountName = config.getPreference("account.selected");
@@ -183,9 +184,14 @@ public class WoWCompanion {
 		log.debug("WoWCompanion: loading default properties");
 		// load default properties
 		try {
-			defaultAccountDirPath = config.getProperty("basedir.default");
-		    accountDirPath = defaultAccountDirPath;
-			log.debug("WoWCompanion: setting account dir to default '"+accountDirPath+"'");
+			defaultBaseDirPath = config.getProperty("basedir.default");
+			log.debug("WoWCompanion: setting default basedir to '"+defaultBaseDirPath+"'");
+			if (baseDirPath.equals("")) {
+				log.debug("WoWCompanion: setting basedir to '"+defaultBaseDirPath+"'");
+				baseDirPath = defaultBaseDirPath;
+			}
+			accountPath = config.getProperty("account.path");
+			log.debug("WoWCompanion: setting account path to '"+accountPath+"'");
 		    savedVarFileName = config.getProperty("data.filename");
 			log.debug("WoWCompanion: setting saved var filename to '"+savedVarFileName+"'");
 		} catch (WoWConfigPropertyNotFoundException e) {
@@ -541,7 +547,7 @@ public class WoWCompanion {
 		fileChooser.setApproveButtonText("OK");
 		fileChooser.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
 		fileChooser.setToolTipText("Browse to your WoW Account Directory");
-		fileChooser.setSelectedFile(new File(defaultAccountDirPath));
+		fileChooser.setSelectedFile(new File(defaultBaseDirPath));
 		fileChooser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				fileChooserActionPerformed(evt);
@@ -604,6 +610,10 @@ public class WoWCompanion {
 	    //}
 	    //usernameField.requestFocus();
 	    //usernameField.requestFocusInWindow();
+        
+        if (loglevel.equals("DEBUG")) {
+			debugMenuItem.setSelected(true);
+        }
 	}
 	
     private void fileChooserActionPerformed(java.awt.event.ActionEvent evt) {
@@ -622,7 +632,7 @@ public class WoWCompanion {
             if (theFile != null) {
                 if (theFile.isDirectory()) {
                     // set the directory here
-                    accountDirPath = fileChooser.getSelectedFile().getAbsolutePath();
+                    baseDirPath = fileChooser.getSelectedFile().getAbsolutePath();
                     log.debug("WoWCompanion: setting accountDir to "+fileChooser.getSelectedFile().getAbsolutePath());
                     statusLabel.setForeground(new Color(0, 150, 0));
                     statusLabel.setText("Valid Account Dir");
@@ -656,25 +666,37 @@ public class WoWCompanion {
 	            }
 	        }
 	    } catch (FileNotFoundException e) {
-	    	log.debug("WoWCompanion: invalid account directory selected", e);
-	        accountSelect.addItem("- INVALID ACCOUNT DIR -");
-            statusLabel.setForeground(Color.RED);
-            statusLabel.setText("Invalid Account Dir");
+	    	// see if the WoW.exe exists
+	    	log.debug("WoWCompanion: looking for '"+ baseDirPath + File.separator + "WoW.exe" +"'");
+	    	File wowExe = new File(baseDirPath + File.separator + "WoW.exe");
+	    	if (wowExe.isFile()) {
+		    	log.debug("WoWCompanion: no valid account dir, but WoW basedir found");
+		        accountSelect.addItem("- NO ACCOUNTS -");
+	            statusLabel.setForeground(Color.RED);
+	            statusLabel.setText("No Account Dirs");
+	    	} else {
+		    	log.error("WoWCompanion: invalid account directory selected", e);
+		        accountSelect.addItem("- INVALID ACCOUNT DIR -");
+	            statusLabel.setForeground(Color.RED);
+	            statusLabel.setText("Invalid Account Dir");
+	    	}
 	    }
 	}
     
     
 	private Collection getAccountDirectories() throws FileNotFoundException {
-		log.debug("WoWCompanion: getting account directories");
+		log.debug("WoWCompanion: getting account directories from '"+ baseDirPath + File.separator + accountPath +"'");
 		
-        File accountDir = new File(accountDirPath);
+        File accountDir = new File(baseDirPath + File.separator + accountPath);
         ArrayList validAccountDirs = new ArrayList();
         if (accountDir.isDirectory()) {
             // search for all account directories under the base path with a
             File[] files = accountDir.listFiles();
             for (int i=0; i < files.length; i++) {
                 if (files[i].isDirectory()) {
-                    if (new File(files[i].getAbsolutePath() + File.separator + savedVarFileName).isFile()) {
+                    if (new File(files[i].getAbsolutePath() + 
+							File.separator +
+							savedVarFileName).isFile()) {
                     	log.debug("WoWCompanion: found account '"+files[i].toString()+"'");
                         validAccountDirs.add(files[i]);
                     }
@@ -682,8 +704,8 @@ public class WoWCompanion {
             }
 
             if (validAccountDirs.size() < 1) {
-            	log.error("WoWCompanion: no valid account directories in WoW directory '"+accountDirPath+"'");
-                throw new FileNotFoundException("no valid account directories in WoW directory '"+accountDirPath+"'");
+            	log.error("WoWCompanion: no valid account directories in WoW directory '"+baseDirPath + File.separator + accountPath+"'");
+                throw new FileNotFoundException("no valid account directories in WoW directory '"+baseDirPath + File.separator + accountPath+"'");
             }
 		} else {
 			log.error("WoWCompanion: couldn't find valid WoW account directory");
@@ -743,7 +765,8 @@ public class WoWCompanion {
     			log.error("WoWCompanion: couldn't save preferences", e);
             }
             
-            String filename = accountDirPath + File.separator + 
+            String filename = baseDirPath + File.separator + 
+							  accountPath + File.separator +
                               accountName + File.separator + 
                               savedVarFileName;
             
