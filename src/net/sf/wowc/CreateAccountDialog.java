@@ -23,6 +23,9 @@ import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 /**
  * @author Administrator
  *
@@ -30,7 +33,7 @@ import javax.swing.JTextField;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class CreateAccountDialog extends JDialog {
-
+	private static Logger log = LogManager.getLogger(CreateAccountDialog.class); 
 	private final JPasswordField confirmPasswordField;
 	private final JPasswordField passwordField;
 	private final JTextField realnameField;
@@ -181,7 +184,7 @@ public class CreateAccountDialog extends JDialog {
 		
 		MouseAdapter createButtonAdaptor = new MouseAdapter() {
 			public void mouseReleased(MouseEvent evt) {
-				System.out.println("createButton.mouseReleased, event=" + evt);
+				log.debug("CreateAccountDialog: createButton.mouseReleased, event=" + evt);
 				//TODO add your code for createButton.mouseReleased
 				
 				String username = new String(usernameField.getText());
@@ -209,19 +212,19 @@ public class CreateAccountDialog extends JDialog {
 						message1 = "Account created";
 						success = true;
 					} catch (InvalidUsernameException e) {
-						System.out.println("invalid username");
+						log.error("CreateAccountDialog: invalid username", e);
 						message1 = "Invalid Username";
 					} catch (DuplicateUsernameException e) {
-						System.out.println("duplicate username");
+						log.error("CreateAccountDialog: duplicate username", e);
 						message1 = "Duplicate Username";
 					} catch (WoWUploaderException e) {
-						System.out.println("error: "+e);
+						log.error("CreateAccountDialog: create error", e);
 						message1 = "Create Error";
 					} catch (WoWUploaderConnectException e) {
-						System.out.println("unable to connect to server: "+e);
+						log.error("CreateAccountDialog: unable to connect to server", e);
 						message1 = "Failed to connect";
 					} catch (UnsupportedEncodingException e) {
-						System.out.println("unable to get UTF8 password");
+						log.error("CreateAccountDialog: unable to get UTF8 password", e);
 						message1 = "System error";
 					}
 				} else if (username == null || username.equals("")){
@@ -251,7 +254,7 @@ public class CreateAccountDialog extends JDialog {
 					createButton.removeMouseListener(this);
 					createButton.addMouseListener(new MouseAdapter() {
 						public void mouseReleased(MouseEvent evt) {
-							System.out.println("createButton.mouseReleased, event=" + evt);
+							log.debug("CreateAccountDialog: createButton.mouseReleased, event=" + evt);
 							// hide this dialog
 							setVisible(false);
 							
@@ -280,7 +283,7 @@ public class CreateAccountDialog extends JDialog {
 	    if (imgURL != null) {
 	        return new ImageIcon(imgURL, description);
 	    } else {
-	        System.err.println("Couldn't find file: " + path);
+	        log.error("CreateAccountDialog: couldn't find icon file: " + path);
 	        return null;
 	    }
 	}

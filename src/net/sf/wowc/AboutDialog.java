@@ -21,6 +21,9 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 /**
  * @author Administrator
  *
@@ -28,8 +31,9 @@ import javax.swing.JTextArea;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class AboutDialog extends JDialog {
-
+	private static Logger log = LogManager.getLogger(AboutDialog.class);
 	private JTextArea textArea;
+
 	public static void main(String args[]) {
 /*		try {
 			AboutDialog dialog = new AboutDialog();
@@ -111,7 +115,7 @@ public class AboutDialog extends JDialog {
 	    if (imgURL != null) {
 	        return new ImageIcon(imgURL, description);
 	    } else {
-	        System.err.println("Couldn't find file: " + path);
+	        log.error("AboutDialog: couldn't find file: " + path);
 	        return null;
 	    }
 	}

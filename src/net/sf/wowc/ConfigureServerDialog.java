@@ -21,6 +21,9 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 /**
  * @author Administrator
  *
@@ -28,7 +31,7 @@ import javax.swing.JTextField;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class ConfigureServerDialog extends JDialog {
-
+	private static Logger log = LogManager.getLogger(ConfigureServerDialog.class); 
 	private JTextField updateURLField;
 	private final JTextField serverURLField;
 	private final JLabel serverURLLabel;
@@ -58,7 +61,7 @@ public class ConfigureServerDialog extends JDialog {
 			config = new WoWConfig();
 		} catch (WoWConfigException e) {
 			// ugg
-			e.printStackTrace(System.err);
+			log.error("ConfigureServerDialog: error getting configuration", e);
 		}
 		
 		JButton saveButton;
@@ -112,25 +115,32 @@ public class ConfigureServerDialog extends JDialog {
 			serverURLField.setText(config.getPreference("server.url"));
 		} catch (WoWConfigPropertyNotFoundException e) {
 			// do nothing
+			log.debug("ConfigureServerDialog: no server.url configured, using default");
 		} catch (Exception e) {
 			// do nothing
+			log.debug("ConfigureServerDialog: error retrieving server.url");
 		}
 		try {
 			// set to the default if a custom value doesn't exist
 			if (serverURLField.getText().equals("")) {
+				log.debug("ConfigureServerDialog: using server.url.default");
 				serverURLField.setText(config.getProperty("server.url.default"));
 			}
 		} catch (WoWConfigPropertyNotFoundException e) {
 			// do nothing
+			log.error("ConfigureServerDialog: no server.url.default configured");
 		} catch (Exception e) {
 			// do nothing
+			log.debug("ConfigureServerDialog: error retrieving server.default.url");
 		}
 		try {
 			updateURLField.setText(config.getPreference("update.url"));
 		} catch (WoWConfigPropertyNotFoundException e) {
 			// do nothing
+			log.error("ConfigureServerDialog: no update.url configured, using default");
 		} catch (Exception e) {
 			// do nothing
+			log.error("ConfigureServerDialog: error retrieving server.url");
 		}
 
 		saveButton = new JButton();
@@ -143,7 +153,7 @@ public class ConfigureServerDialog extends JDialog {
             		dialog.setVisible(false);
 				} catch (IOException ee) {
 					// display an error
-					ee.printStackTrace(System.err);
+					log.error("ConfigureServerDialog: error saving preferences", ee);
 				}
 			}
 		});
@@ -165,7 +175,7 @@ public class ConfigureServerDialog extends JDialog {
 	    if (imgURL != null) {
 	        return new ImageIcon(imgURL, description);
 	    } else {
-	        System.err.println("Couldn't find file: " + path);
+	        log.error("ConfigureServerDialog: couldn't find icon file: " + path);
 	        return null;
 	    }
 	}

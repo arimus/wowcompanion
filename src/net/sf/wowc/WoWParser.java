@@ -9,6 +9,8 @@ package net.sf.wowc;
 import java.io.*;
 import java.util.*;
 import org.apache.oro.text.perl.*;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * @author arimus
@@ -17,6 +19,7 @@ import org.apache.oro.text.perl.*;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class WoWParser {
+	private static Logger log = LogManager.getLogger(WoWParser.class);
 	// FIXME add configuration file
 	
 	public WoWParser() {
@@ -65,13 +68,13 @@ public class WoWParser {
                 }
             }
             long end = System.currentTimeMillis();
-            System.out.println("parsing took "+(end-start)+" milliseconds");
+            log.debug("WoWParser: parsing took "+(end-start)+" milliseconds");
 
             return data.toString();
         } catch (IOException e) {
-            System.err.println("error reading file: "+e);
+            log.error("WoWParser: error reading file: ", e);
         } catch (Exception ee) {
-            ee.printStackTrace(System.err);
+            log.error("WoWParser: error", ee);
         }
 
 		throw new WoWParserException();
@@ -85,13 +88,13 @@ public class WoWParser {
 			System.out.println(data);
 			WoWUploader.upload(data, "arimus", "arimus");
 		} catch (WoWUploaderConnectException e) {
-			System.err.println(e);
+			log.error("WoWParser: uploading exception", e);
 		} catch (InvalidUserPassException e) {
-			System.err.println(e);
+			log.error("WoWParser: invalid user/pass");
 		} catch (WoWParserException e) {
-			System.err.println(e);
+			log.error("WoWParser: parser exception", e);
 		} catch (WoWUploaderException e) {
-			System.err.println("error: "+e);
+			log.error("WoWParser: uploading exception", e);
 		}
 	}
 }

@@ -11,6 +11,10 @@ import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import java.io.IOException;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
+
 /**
  * @author Administrator
  *
@@ -18,6 +22,8 @@ import java.io.IOException;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class WoWUploader {
+	private static Logger log = LogManager.getLogger(WoWUploader.class); 
+
 	private static String serverURL = "";
 	private static String username = "";
 	private static String password = "";
@@ -39,27 +45,26 @@ public class WoWUploader {
 		//if (!initialized) {
 			initialized = true;
 			try {
-				System.out.println("loading config");
+				log.debug("WoWUploader: initializing config");
 				WoWConfig config = new WoWConfig();
 				
 				try {
 					serverURL = config.getPreference("server.url");
 				} catch (WoWConfigPropertyNotFoundException e) {
 					// nothing
-					System.out.println("no server.url found, using default");
-					e.printStackTrace();
+					log.debug("WoWUploader: no server.url found, using default");
 				}
 				
 				if (serverURL.equals("")) {
 					serverURL = config.getProperty("server.url.default");
 				}
-				System.out.println("using server URL: '"+serverURL+"'");
+				log.debug("WoWUploader: using server URL: '"+serverURL+"'");
 			} catch (WoWConfigException e) {
 				// FIXME - show an error dialog here, then exit
-				System.err.println("error loading config: "+e);
+				log.error("WoWUploader: error loading config");
 			} catch (WoWConfigPropertyNotFoundException e) {
 				// FIXME - show an error dialog here, then exit
-				System.err.println("server URL property not found: "+e);
+				log.error("WoWUploader: server URL property not found");
 			}
 		//}
 	}
@@ -83,7 +88,7 @@ public class WoWUploader {
 
         // set the timeout is specified
         if (timeout != 0) {
-            System.out.println("setting timeout to '"+timeout+"' milliseconds");
+            log.debug("WoWUploader: setting timeout to '"+timeout+"' milliseconds");
             long start = System.currentTimeMillis();
             client.setConnectionTimeout(timeout);
             long end = System.currentTimeMillis();
@@ -110,20 +115,20 @@ public class WoWUploader {
         //for (int attempt = 0; statusCode == -1 && attempt < 3; attempt++) {
             try {
                 // execute the get method
-                System.out.println("creating account");
+                log.debug("WoWUploader: creating account");
                 statusCode = client.executeMethod(method);
             } catch (HttpRecoverableException e) {
-                System.err.println("a recoverable exception occurred, retrying." + e.getMessage());
+                log.debug("WoWUploader: a recoverable exception occurred, retrying.", e);
                 throw new WoWUploaderConnectException("error: "+e);
             } catch (IOException e) {
-                System.err.println("failed to upload data: "+e);
+                log.debug("WoWUploader: failed to upload data: ", e);
                 throw new WoWUploaderConnectException("error: "+e);
             }
         //}
 
         // check that we didn't run out of retries
         if (statusCode != HttpStatus.SC_OK) {
-            System.err.println("failed to create account: "+HttpStatus.getStatusText(statusCode));
+            log.error("WoWUploader: failed to create account: "+HttpStatus.getStatusText(statusCode));
             throw new WoWUploaderException("failed to create account");
         } else {
             // read the response body
@@ -135,15 +140,19 @@ public class WoWUploader {
             // deal with the response.
             // FIXME - ensure we use the correct character encoding here
             String response = new String(responseBody);
-            System.out.println("response was: "+response);
+            log.debug("WoWUploader: response was: "+response);
             
             if (response.equals(FAILURE)) {
+            	log.error("WoWUploader: failed to create account");
             	throw new WoWUploaderException("error");
             } else if (response.equals(DUPLICATE_USER)) {
+            	log.error("WoWUploader: duplicate user, not creating account");
             	throw new DuplicateUsernameException();
             } else if (response.equals(SUCCESS)) {
+            	log.debug("WoWUploader: account created");
             	// do nothing
             } else {
+            	log.error("WoWUploader: unknown response from server");
             	throw new WoWUploaderException("unknown response from server");
             }
         }
@@ -152,7 +161,7 @@ public class WoWUploader {
 	public static void upload(String data, String username, String password) 
 		throws WoWUploaderException, InvalidUserPassException, WoWUploaderConnectException 
 	{
-		System.out.println("WoWUpload: upload()");
+		log.debug("WoWUpload: upload()");
 		initConfig();
 		
         if ((username == null) || username.equals("") &&
@@ -170,7 +179,7 @@ public class WoWUploader {
 
         // set the timeout is specified
         if (timeout != 0) {
-            System.out.println("setting timeout to '"+timeout+"' milliseconds");
+            log.debug("WoWUpload: setting timeout to '"+timeout+"' milliseconds");
             long start = System.currentTimeMillis();
             client.setConnectionTimeout(timeout);
             long end = System.currentTimeMillis();
@@ -197,20 +206,20 @@ public class WoWUploader {
         //for (int attempt = 0; statusCode == -1 && attempt < 3; attempt++) {
             try {
                 // execute the get method
-                System.out.println("uploading data");
+                log.debug("WoWUpload: uploading data");
                 statusCode = client.executeMethod(method);
             } catch (HttpRecoverableException e) {
-                System.err.println("a recoverable exception occurred, retrying." + e.getMessage());
+                log.debug("WoWUpload: a recoverable exception occurred, retrying.", e);
                 throw new WoWUploaderConnectException("error: "+e);
             } catch (IOException e) {
-                System.err.println("failed to upload data: "+e);
+                log.debug("WoWUpload: failed to upload data", e);
                 throw new WoWUploaderConnectException("error: "+e);
             }
         //}
 
         // check that we didn't run out of retries
         if (statusCode != HttpStatus.SC_OK) {
-            System.err.println("failed to upload data: "+HttpStatus.getStatusText(statusCode));
+            log.error("WoWUpload: failed to upload data: "+HttpStatus.getStatusText(statusCode));
             throw new WoWUploaderException("failed to upload data");
         } else {
             // read the response body
@@ -222,15 +231,19 @@ public class WoWUploader {
             // deal with the response.
             // FIXME - ensure we use the correct character encoding here
             String response = new String(responseBody);
-            System.out.println("response was: "+response);
+            log.debug("WoWUpload: response was: "+response);
             
             if (response.equals(ERROR_USER_PASS)) {
+            	log.error("WoWUpload: invalid user/pass");
             	throw new InvalidUserPassException();
             } else if (response.equals(FAILURE)) {
+            	log.error("WoWUpload: failed to upload");
             	throw new WoWUploaderException("error");
             } else if (response.equals(SUCCESS)) {
+            	log.debug("WoWUpload: uploaded successfully");
             	// do nothing
             } else {
+            	log.error("WoWUpload: unknown response from server");
             	throw new WoWUploaderException("unknown response from server");
             }
         }

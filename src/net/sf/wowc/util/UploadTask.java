@@ -3,6 +3,9 @@ package net.sf.wowc.util;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import net.sf.wowc.InvalidUserPassException;
 import net.sf.wowc.WoWParser;
 import net.sf.wowc.WoWParserException;
@@ -13,6 +16,7 @@ import net.sf.wowc.WoWUploaderException;
 /** Uses a SwingWorker to perform a time-consuming (and utterly fake) task. */
 
 public class UploadTask {
+	private static Logger log = LogManager.getLogger(UploadTask.class); 
     private int lengthOfTask;
     private int current = 0;
     private boolean done = false;
@@ -63,22 +67,31 @@ public class UploadTask {
         return current;
     }
 
+    /**
+     * Cancel this task
+     */
     public void stop() {
         canceled = true;
         statusMessage = null;
     }
 
     /**
-     * Called from ProgressBarDemo to find out if the task has completed.
+     * find out if the task has completed.
      */
     public boolean isDone() {
         return done;
     }
     
+    /**
+     * find out if the task had errors.
+     */
     public boolean hasErrors() {
     	return hasErrors;
     }
-    
+
+    /**
+     * get the error message for the error that occurred
+     */
     public String getErrorMessage() {
     	return errorMessage;
     }
@@ -107,6 +120,7 @@ public class UploadTask {
         		statusMessage = "opening data file";
                 File f = new File(savedVarsFilename);
     			if (!f.isFile()) {
+    				log.error("UploadTask: failed to open '"+f.getAbsolutePath()+ "'");
     				throw new FileNotFoundException("failed to open '"+f.getAbsolutePath()+ "'");
     			}
         		statusMessage = "parsing character data";
@@ -115,36 +129,36 @@ public class UploadTask {
     			//System.out.println("UploadTask: data = "+data);
 
     			// send the data here
-    			System.out.println("UploadTask: uploading");
+    			log.debug("UploadTask: uploading");
         		statusMessage = "uploading character data";
         		WoWUploader.upload(data, username, password);
         	} catch (FileNotFoundException e) {
         		hasErrors = true;
         		errorMessage = "Failed to open data file"; //+e;
-        		e.printStackTrace(System.err);
+        		log.error("UploadTask: failed to open data file", e);
         	} catch (WoWParserException e) {
         		hasErrors = true;
         		errorMessage = "Error parsing character data"; //+e;
-        		e.printStackTrace(System.err);
+        		log.error("UploadTask: error parsing character data", e);
         	} catch (WoWUploaderException e) {
         		hasErrors = true;
         		errorMessage = "Error uploading data"; //+e;
-        		e.printStackTrace(System.err);
+        		log.error("UploadTask: error uploading data", e);
         	} catch (WoWUploaderConnectException e) {
         		hasErrors = true;
         		errorMessage = "Error connecting to server"; //+e;
-        		e.printStackTrace(System.err);
+        		log.error("UploadTask: error connecting to server", e);
         	} catch (InvalidUserPassException e) {
         		hasErrors = true;
         		errorMessage = "Invalid user/pass";
-        		e.printStackTrace(System.err);
+        		log.error("UploadTask: invalid user/pass", e);
 //        	} catch (PermissionDeniedException e) {
 //        		hasErrors = true;
 //        		this.error = e;
         	} catch (Exception e) {
         		hasErrors = true;
         		errorMessage = "Error";
-        		e.printStackTrace(System.err);
+        		log.error("UploadTask: error", e);
         	}
         	done = true;
         }

@@ -10,6 +10,9 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.IOException;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 /**
  * <p>Title: WoWConfig</p>
  * <p>Description: </p>
@@ -19,6 +22,8 @@ import java.io.IOException;
  */
 
 public class WoWConfig {
+	private static Logger log = LogManager.getLogger(WoWConfig.class); 
+
     private static String configFile = "/wowcompanion.properties";
     private static String preferencesFile = "wowcompanion.pref";
     
@@ -30,6 +35,7 @@ public class WoWConfig {
 		// get the config data from the properties file
 		resourceStream = WoWConfig.class.getResourceAsStream(configFile);
 		if (resourceStream == null) {
+			log.error("WoWConfig: could not find config file '"+configFile+"'");
 			throw new WoWConfigException("WoWConfig: could not find config file '"+configFile+"'");
 		}
 
@@ -42,20 +48,21 @@ public class WoWConfig {
 			Iterator i = config.keySet().iterator();
 			while (i.hasNext()) {
 				Object key = i.next();
-				System.out.println(key+"="+config.get(key));
+				log.debug("WoWConfig: found in config: "+key+"="+config.get(key));
 			}
 		} catch (IOException e) {
+			  log.error("WoWConfig: could not load config file '"+configFile+"'", e);
 			  throw new WoWConfigException("WoWConfig: could not load config file '"+configFile+"'");
 		}
 
 		// get current working directory
 	    String cwd = System.getProperty("user.dir");
-	    System.out.println("cwd = "+cwd);
+	    log.debug("WoWConfig: cwd = "+cwd);
 		
 		// get the user preferences
 	    try {
 	    	String prefsFile = cwd + File.separator + preferencesFile;
-		    System.out.println("prefsFiles = "+prefsFile);
+		    log.debug("WoWConfig: prefsFiles = "+prefsFile);
 		    FileInputStream fis = new FileInputStream(prefsFile);
 		    if (fis != null) {
 		    	preferences.load(fis);
@@ -63,7 +70,7 @@ public class WoWConfig {
 		    	Iterator i = preferences.keySet().iterator();
 		    	while (i.hasNext()) {
 		    		Object key = i.next();
-		    		System.out.println(key+"="+preferences.get(key));
+		    		log.debug("WoWConfig: found in prefs: "+key+"="+preferences.get(key));
 		    	}
 		    } else {
 		    	// no preferences file found, create a default
@@ -76,21 +83,23 @@ public class WoWConfig {
 		    		FileOutputStream fos = new FileOutputStream(tmp);
 		    	    preferences.store(fos, "");
 		    	} catch (FileNotFoundException ee) {
+					  log.debug("WoWConfig: could not load preferences file '"+tmp+"'", ee);
 					  throw new WoWConfigException("WoWConfig: could not load properties file '"+tmp+"'");
 		    	} catch (IOException ee) {
+					  log.debug("WoWConfig: error loading preferences file '"+tmp+"'", ee);
 					  throw new WoWConfigException("WoWConfig: error loading properties file '"+tmp+"'");
 		    	}
 
 		    }
 	    } catch (IOException e) {
-	    	System.err.println("error loading preferences: "+e);
+	    	log.debug("WoWConfig: error loading preferences", e);
 	    }
 	    
 	    try {
 	    	resourceStream.close();
 	    } catch (IOException e) {
 	    	// do nothing
-	    	e.printStackTrace(System.err);
+	    	log.error("WoWConfig: error closing resources", e);
 	    }
     }
 	
@@ -108,6 +117,7 @@ public class WoWConfig {
 		if (config.containsKey(key)) {
 			return config.getProperty(key);
 		}
+		log.error("WoWConfig: could not find property '"+key+"'");
 		throw new WoWConfigPropertyNotFoundException();
 	}
 	
@@ -117,6 +127,7 @@ public class WoWConfig {
 		if (preferences.containsKey(key)) {
 			return preferences.getProperty(key);
 		}
+		log.error("WoWConfig: could not find preference '"+key+"'");
 		throw new WoWConfigPropertyNotFoundException();
 	}
 	
