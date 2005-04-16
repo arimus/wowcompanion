@@ -9,10 +9,15 @@ package net.sf.wowc;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.commons.httpclient.methods.multipart.ByteArrayPartSource;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
 import java.io.IOException;
+import java.util.Map;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import net.sf.wowc.util.GZIP;
 
 
 /**
@@ -22,7 +27,7 @@ import org.apache.log4j.Logger;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class WoWUploader {
-	private static Logger log = LogManager.getLogger(WoWUploader.class); 
+	private static Logger log = null; 
 
 	private static String serverURL = "";
 	private static String username = "";
@@ -40,6 +45,31 @@ public class WoWUploader {
 	// FIXME - configure this in a config file
 	
 	private static boolean initialized = false;
+
+	private static void initLog() {
+		try {
+			WoWConfig config = new WoWConfig();
+			Map m = config.getPreferences();
+			
+			log = config.getLogger();
+
+			if (m.containsKey("loglevel")) {
+				// set the level to debug if needed
+				String loglevel = config.getPreference("loglevel");
+				if (loglevel.equals("DEBUG")) {
+					log.setLevel(Level.DEBUG);
+				}
+			}
+		} catch (WoWConfigException e) {
+			log.error("WoWCompanion: failed to load configuration", e);
+		} catch (WoWConfigPropertyNotFoundException e) {
+			// FIXME - show an error dialog here, then exit
+			log.error("WoWCompanion: failed to load preferences", e);
+		}
+	}
+
+	public WoWUploader() {
+	}
 	
 	private static void initConfig(){
 		//if (!initialized) {
@@ -161,7 +191,11 @@ public class WoWUploader {
 	public static void upload(String data, String username, String password) 
 		throws WoWUploaderException, InvalidUserPassException, WoWUploaderConnectException 
 	{
+		initLog();
+		
 		log.debug("WoWUpload: upload()");
+		long istart = System.currentTimeMillis();
+		
 		initConfig();
 		
         if ((username == null) || username.equals("") &&
@@ -193,7 +227,21 @@ public class WoWUploader {
         // create the http method we will use
         MultipartPostMethod method = new MultipartPostMethod(serverURL);
 		StringPart actionPart = new StringPart("action", ACTION_UPLOAD_DATA);
-		StringPart dataPart = new StringPart("data", data);
+		//StringPart dataPart = new StringPart("data", data);
+		byte[] gziped = null;
+		
+		try {
+			long st = System.currentTimeMillis();
+			gziped = GZIP.gzipToBytes(data.getBytes());
+			long en = System.currentTimeMillis();
+			log.debug("WoWUpload: took "+(en-st)+" milliseconds to gzip");
+		} catch (Exception ge) {
+			// hrmm, failed to gzip
+			throw new WoWUploaderException("failed to compress data");
+		}
+		
+		ByteArrayPartSource dataPartSource = new ByteArrayPartSource("data", gziped);
+		FilePart dataPart = new FilePart("data", dataPartSource);
 		StringPart userPart = new StringPart("username", username);
 		StringPart passPart = new StringPart("password", password);
 		method.addPart(actionPart);
@@ -247,5 +295,8 @@ public class WoWUploader {
             	throw new WoWUploaderException("unknown response from server");
             }
         }
+
+        long iend = System.currentTimeMillis();
+    	log.debug("WoWUpload: upload took "+(iend-istart)+" milliseconds");
 	}
 }

@@ -15,6 +15,7 @@ import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -23,6 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -33,7 +35,7 @@ import org.apache.log4j.Logger;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class CreateAccountDialog extends JDialog {
-	private static Logger log = LogManager.getLogger(CreateAccountDialog.class); 
+	private static Logger log = null; 
 	private final JPasswordField confirmPasswordField;
 	private final JPasswordField passwordField;
 	private final JTextField realnameField;
@@ -47,6 +49,29 @@ public class CreateAccountDialog extends JDialog {
 	private final JLabel statusMessage2;
 	private final JLabel imageLabel;
 	private GridBagConstraints gridBagConstraints;
+
+	{
+		try {
+			WoWConfig config = new WoWConfig();
+			Map m = config.getPreferences();
+			
+			log = config.getLogger();
+
+			if (m.containsKey("loglevel")) {
+				// set the level to debug if needed
+				String loglevel = config.getPreference("loglevel");
+				if (loglevel.equals("DEBUG")) {
+					log.setLevel(Level.DEBUG);
+				}
+			}
+		} catch (WoWConfigException e) {
+			log.error("WoWCompanion: failed to load configuration", e);
+		} catch (WoWConfigPropertyNotFoundException e) {
+			// FIXME - show an error dialog here, then exit
+			log.error("WoWCompanion: failed to load preferences", e);
+		}
+
+	}
 
 	public static void main(String args[]) {
 /*		try {

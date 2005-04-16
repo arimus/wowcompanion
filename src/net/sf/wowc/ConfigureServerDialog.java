@@ -14,6 +14,7 @@ import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -21,6 +22,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -31,7 +33,7 @@ import org.apache.log4j.Logger;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class ConfigureServerDialog extends JDialog {
-	private static Logger log = LogManager.getLogger(ConfigureServerDialog.class); 
+	private static Logger log = null; 
 	private JTextField updateURLField;
 	private final JTextField serverURLField;
 	private final JLabel serverURLLabel;
@@ -39,6 +41,29 @@ public class ConfigureServerDialog extends JDialog {
 	private static JDialog dialog = null;
 	private static WoWConfig config = null;
 	
+	{
+		try {
+			WoWConfig config = new WoWConfig();
+			Map m = config.getPreferences();
+
+			log = config.getLogger();
+			
+			if (m.containsKey("loglevel")) {
+				// set the level to debug if needed
+				String loglevel = config.getPreference("loglevel");
+				if (loglevel.equals("DEBUG")) {
+					log.setLevel(Level.DEBUG);
+				}
+			}
+		} catch (WoWConfigException e) {
+			log.error("WoWCompanion: failed to load configuration", e);
+		} catch (WoWConfigPropertyNotFoundException e) {
+			// FIXME - show an error dialog here, then exit
+			log.error("WoWCompanion: failed to load preferences", e);
+		}
+
+	}
+
 	public static void main(String args[]) {
 /*		try {
 			CreateAccountDialog dialog = new CreateAccountDialog();

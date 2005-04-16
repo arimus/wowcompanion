@@ -14,6 +14,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Map;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -25,6 +26,7 @@ import net.sf.wowc.WoWConfig;
 import net.sf.wowc.WoWConfigException;
 import net.sf.wowc.WoWConfigPropertyNotFoundException;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -35,8 +37,31 @@ import org.apache.log4j.Logger;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class AboutDialog extends JDialog {
-	private static Logger log = LogManager.getLogger(AboutDialog.class);
+	private static Logger log = null;
 	private JTextArea textArea;
+
+	{
+		try {
+			WoWConfig config = new WoWConfig();
+			Map m = config.getPreferences();
+			
+			log = config.getLogger();
+
+			if (m.containsKey("loglevel")) {
+				// set the level to debug if needed
+				String loglevel = config.getPreference("loglevel");
+				if (loglevel.equals("DEBUG")) {
+					log.setLevel(Level.DEBUG);
+				}
+			}
+		} catch (WoWConfigException e) {
+			log.error("WoWCompanion: failed to load configuration", e);
+		} catch (WoWConfigPropertyNotFoundException e) {
+			// FIXME - show an error dialog here, then exit
+			log.error("WoWCompanion: failed to load preferences", e);
+		}
+
+	}
 
 	public static void main(String args[]) {
 /*		try {

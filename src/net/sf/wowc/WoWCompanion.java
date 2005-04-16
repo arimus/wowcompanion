@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Enumeration;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -50,6 +51,8 @@ import org.apache.oro.text.perl.Perl5Util;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Level;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
 
 import net.sf.wowc.util.*;
 import javax.swing.JCheckBoxMenuItem;
@@ -62,8 +65,11 @@ import javax.swing.JCheckBoxMenuItem;
  */
 public class WoWCompanion {
 	private static Logger log = LogManager.getLogger(WoWCompanion.class);
+	//private static Logger fileLogger = LogManager.getLogger("net.sf.wowc");
 	private static String loglevel = "INFO";
 	public final static int ONE_SECOND = 1000;
+	private static String homeDirectory = System.getProperty("user.home");
+	
     private static WoWConfig config;
     private static String defaultBaseDirPath = "";
     private static String baseDirPath = defaultBaseDirPath;
@@ -85,7 +91,7 @@ public class WoWCompanion {
 	private GridBagConstraints gridBagConstraints;
 	private JButton browseButton;
 	private JLabel usernameLabel;
-	private JLabel statusLabel;
+	private static JLabel statusLabel;
 	private JLabel passwordLabel;
 	private JButton uploadButton;
 	private JFileChooser fileChooser;
@@ -108,31 +114,112 @@ public class WoWCompanion {
 			e.printStackTrace();
 		}
 	}
-	
-	public static void main(String args[]) {
-		try {
-			log.debug("WoWCompanion: loading configuration");
-			config = new WoWConfig();
-		} catch (WoWConfigException e) {
-			log.error("WoWCompanion: could not load configuration");
-		}
-		
-		try {
-			WoWCompanion window = new WoWCompanion();
-			// center our window
-			Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-			WoWCompanion.frame.setLocation((d.width-WoWCompanion.frame.getWidth())/2, (d.height-WoWCompanion.frame.getHeight())/2);
-			// show our window
-			WoWCompanion.frame.setVisible(true);
-		} catch (Exception e) {
-			log.error("WoWCompanion: error creating UI", e);
-		}
-	}
 
 	public WoWCompanion() {
 		initConfig();
 		initialize();
 		postInitialize();
+	}
+	
+	public static void main(String args[]) {
+		try {
+			//log.debug("WoWCompanion: loading configuration");
+			config = new WoWConfig();
+		} catch (WoWConfigException e) {
+			log.error("WoWCompanion: could not load configuration");
+		}
+		
+		log = config.getLogger();
+
+		try {
+			WoWCompanion window = new WoWCompanion();
+
+//			// LOG CONFIGURATION
+//			
+//			// get the file appender
+//			Logger rootLogger = Logger.getRootLogger();
+//			Enumeration appenders = fileLogger.getAllAppenders();
+//			FileAppender appender = null;
+//			
+//			rootLogger.removeAllAppenders();
+//			//rootLogger.error("WoWCompanion: searching for file appender");
+//
+//			// setup the logger before continuing
+//			while (appenders.hasMoreElements()) {
+//				FileAppender a = (FileAppender)appenders.nextElement();
+//				if (a instanceof FileAppender) {
+//					appender = a;
+//					//rootLogger.error("WoWCompanion: found appender");
+//				} else {
+//					//rootLogger.error("WoWCompanion: not correct appender, '"+a.getName()+"'");
+//				}
+//			}
+//			
+//			// if we have a file appender
+//			if (appender != null) {
+//				String logName = appender.getFile();
+//				
+//				// we want the log to be saved into the WoW directory
+//				File f = new File(baseDirPath);
+//				if (f.exists() && f.isDirectory()) {
+//					// adjust the appender
+//					logName = homeDirectory + File.separator + logName;
+//					//rootLogger.error("WoWCompanion: setting file for appender to '"+logName+"'");
+//					appender.setFile(logName);
+//					appender.activateOptions();
+//					log.removeAllAppenders();
+//					log.addAppender(appender);
+//				}
+//			}
+//			
+//			// we want the log to be saved into the WoW directory
+//			File f = new File(baseDirPath + File.separator + "wowcompanion.log");
+//			if (f.exists() && f.isDirectory()) {
+//				// adjust the appender
+//				String l = baseDirPath + File.separator + "wowcompanion.log";
+//				//rootLogger.debug("WoWCompanion: saving log '"+baseDirPath + File.separator + "wowcompanion.log"+"'");
+//				appender.setFile(l);
+//			}
+//			
+//			// END LOG CONFIGURATION
+
+			// center our window
+			Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+			WoWCompanion.frame.setLocation((d.width-WoWCompanion.frame.getWidth())/2, (d.height-WoWCompanion.frame.getHeight())/2);
+			// show our window
+			WoWCompanion.frame.setVisible(true);
+			
+	        
+	        try {
+	        	log.debug("WoWCompanion: updating components");
+	            statusLabel.setForeground(Color.BLACK);
+	            statusLabel.setText("Updating components");
+	            WoWUpdater updater = new WoWUpdater();
+	        	updater.run();
+	        	
+	        	Collection failed = updater.getFailedComponents(); 
+	        	if (failed.size() > 0) {
+	        		Iterator ii = failed.iterator();
+	        		String s = "Failed to update components";
+	        		//while (ii.hasNext()) {
+	        		//	s += (String)ii.next() + " ";
+	        		//}
+	                statusLabel.setForeground(Color.RED);
+	        		statusLabel.setText(s);
+	        		log.error("WoWCompanion: some components failed to update: "+failed);
+	        	} else {
+		            statusLabel.setForeground(Color.BLACK);
+	        		statusLabel.setText("Done updating components");
+	        		log.debug("WoWCompanion: finished updating components");
+	        	}
+	        } catch (WoWUpdaterException e) {	
+	            statusLabel.setForeground(Color.RED);
+	            statusLabel.setText("Error updating components");
+	        	log.error("WoWCompanion: error updating components", e);
+	        }
+		} catch (Exception e) {
+			log.error("WoWCompanion: error creating UI", e);
+		}
 	}
 
 	public void initConfig() {
@@ -195,13 +282,13 @@ public class WoWCompanion {
 			log.error("WoWCompanion: failed to load default properties", e);
 		}
 
-		try {
-			accountPath = config.getProperty("account.path");
-			log.debug("WoWCompanion: setting account path to '"+accountPath+"'");
-		} catch (WoWConfigPropertyNotFoundException e) {
-			// FIXME - show an error dialog here, then exit
-			log.error("WoWCompanion: failed to load default properties", e);
-		}
+		//try {
+		//	accountPath = config.getProperty("account.path");
+		//	log.debug("WoWCompanion: setting account path to '"+accountPath+"'");
+		//} catch (WoWConfigPropertyNotFoundException e) {
+		//	// FIXME - show an error dialog here, then exit
+		//	log.debug("WoWCompanion: failed to retrieve account path from properties");
+		//}
 
 		try {
 		    savedVarFileName = config.getProperty("data.filename");
@@ -833,6 +920,7 @@ public class WoWCompanion {
             //dialogText.setText("Error opening account: "+e);
             //dialog.pack();
             //dialog.show()
+            statusLabel.setForeground(Color.RED);
 			statusLabel.setText("Error opening account dir");
 			log.error("WoWCompanion: error opening account directory");
 //		} catch (WoWParserException e) {

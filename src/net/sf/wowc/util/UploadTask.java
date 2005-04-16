@@ -2,11 +2,16 @@ package net.sf.wowc.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Map;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import net.sf.wowc.InvalidUserPassException;
+import net.sf.wowc.WoWConfig;
+import net.sf.wowc.WoWConfigException;
+import net.sf.wowc.WoWConfigPropertyNotFoundException;
 import net.sf.wowc.WoWParser;
 import net.sf.wowc.WoWParserException;
 import net.sf.wowc.WoWUploader;
@@ -16,7 +21,7 @@ import net.sf.wowc.WoWUploaderException;
 /** Uses a SwingWorker to perform a time-consuming (and utterly fake) task. */
 
 public class UploadTask {
-	private static Logger log = LogManager.getLogger(UploadTask.class); 
+	private static Logger log = null; 
     private int lengthOfTask;
     private int current = 0;
     private boolean done = false;
@@ -26,6 +31,29 @@ public class UploadTask {
 	private boolean hasErrors;
 	private String errorMessage;
 	private String[] args = new String[0];
+
+	{
+		try {
+			WoWConfig config = new WoWConfig();
+			Map m = config.getPreferences();
+			
+			log = config.getLogger();
+
+			if (m.containsKey("loglevel")) {
+				// set the level to debug if needed
+				String loglevel = config.getPreference("loglevel");
+				if (loglevel.equals("DEBUG")) {
+					log.setLevel(Level.DEBUG);
+				}
+			}
+		} catch (WoWConfigException e) {
+			log.error("WoWCompanion: failed to load configuration", e);
+		} catch (WoWConfigPropertyNotFoundException e) {
+			// FIXME - show an error dialog here, then exit
+			log.error("WoWCompanion: failed to load preferences", e);
+		}
+
+	}
 
     public UploadTask(String[] args) {
     	this.args = args;
