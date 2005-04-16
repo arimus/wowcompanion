@@ -1,9 +1,9 @@
 - Possibly add a minimum size instead of turning resize off?
 - Add some form of password change functionality, email, possibly other
   account management-type features
-- Bundle CharacterProfiler with WoWCompanion
-- Add an auto-update feature to keep CP/WoWC in sync with WoW
 
 --
 
+Add an auto-update feature to keep CP/WoWC in sync with WoW (done)
+Bundle CharacterProfiler with WoWCompanion (done)
 Move the "Save Pass" checkbox after password in the tab order (fixed)
