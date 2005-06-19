@@ -1,11 +1,18 @@
 Changelog
 ---------
 
+Changes since 0.1.11
+	* some cleanup
+	* bundled and released as stable
+
 Changes since 0.1.10
 	* the default platform look and feel is fixed, was hard coded to windows
 	* the account directory "WTF\Account" is now correct for platforms other
 	  than Windows.  The separator was previsouly hard-coded, which does not
 	  work on Linux/OSX
+	* GZIP compression added to upload
+	* auto-updating of components added
+	* changes made to support distribution and auto-updated via Java Web Start
 
 Changes since 0.1.9
 	* logging added with a menu item to enable debug logging
