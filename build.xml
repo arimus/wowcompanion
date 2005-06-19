@@ -17,7 +17,6 @@
 
     <property environment="env" />
     <property name="src.dir" value="${basedir}/src"/>
-    <property name="src.resources" value="${basedir}/resources"/>
     <property name="build.dir" value="${basedir}/build"/>
     <property name="build.onejar.dir" value="${basedir}/build.onejar"/>
     <property name="dist.dir" value="${basedir}/dist"/>
@@ -100,7 +99,7 @@
 	<!-- Target to create channel archive -->
     <target name="jar" depends="compile">
 		<mkdir dir="${dist.dir}"/>
-
+    	
     	<jar destfile="${dist.dir}/${app.name}-${app.version}.jar">
     		<!-- manifest="META-INF/MANIFEST.MF"-->
 			<fileset dir="${build.dir}"/>

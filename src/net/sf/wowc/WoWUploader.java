@@ -38,6 +38,7 @@ public class WoWUploader {
     private static String DUPLICATE_USER = "DUPLICATE_USER";
     private static String ERROR_USER_PASS = "ERROR_USER_PASS";
     private static String ACTION_CREATE_ACCOUNT = "CREATE_ACCOUNT";
+    private static String ACTION_UPDATE_ACCOUNT = "UPDATE_ACCOUNT";
     private static String ACTION_UPLOAD_DATA = "UPLOAD_DATA";
 
 	private static int defaultTimeout = 10000;
@@ -99,11 +100,13 @@ public class WoWUploader {
 		//}
 	}
 	
-	public static void createAccount(String realname, String username, String password) 
+	public static void createAccount(String realname, String email, String username, String password) 
 		throws WoWUploaderException, WoWUploaderConnectException, 
 		InvalidUsernameException, DuplicateUsernameException
 	{
-		initConfig();
+	    initLog();
+	    log.debug("WoWUploader: createAccount()");
+	    initConfig();
 		
         if ((username == null) || username.equals("") ||
     		(password == null) || password.equals(""))
@@ -135,10 +138,12 @@ public class WoWUploader {
 		StringPart realnamePart = new StringPart("realname", realname);
 		StringPart userPart = new StringPart("username", username);
 		StringPart passPart = new StringPart("password", password);
+		StringPart emailPart = new StringPart("email", password);
 		method.addPart(actionPart);
 		method.addPart(realnamePart);
 		method.addPart(userPart);
 		method.addPart(passPart);
+		method.addPart(emailPart);
 		
         // connect to the upload server, retrying up to the specified num
         int statusCode = -1;
@@ -178,6 +183,99 @@ public class WoWUploader {
             } else if (response.equals(DUPLICATE_USER)) {
             	log.error("WoWUploader: duplicate user, not creating account");
             	throw new DuplicateUsernameException();
+            } else if (response.equals(SUCCESS)) {
+            	log.debug("WoWUploader: account created");
+            	// do nothing
+            } else {
+            	log.error("WoWUploader: unknown response from server");
+            	throw new WoWUploaderException("unknown response from server");
+            }
+        }
+	}
+	
+	public static void updateAccount(String realname, String email, String username, String oldpassword, String password) 
+		throws WoWUploaderException, WoWUploaderConnectException, 
+		InvalidUsernameException, InvalidUserPassException
+	{
+	    initLog();
+	    log.debug("WoWUploader: updateAccount()");
+	    initConfig();
+		
+        if ((username == null) || username.equals("") ||
+    		(password == null) || password.equals(""))
+    	{
+           	throw new WoWUploaderException("invalid username/password");
+    	}
+    		
+        // username and oldpassword are current information, everything else will be updated
+        
+        // create the http client
+        HttpClient client = new HttpClient();
+
+        // set the timeout is specified
+        if (timeout != 0) {
+            log.debug("WoWUploader: setting timeout to '"+timeout+"' milliseconds");
+            long start = System.currentTimeMillis();
+            client.setConnectionTimeout(timeout);
+            long end = System.currentTimeMillis();
+            if (end - start < timeout) {
+                client.setTimeout((int)(end - start));
+            } else {
+            	client.setTimeout(defaultTimeout);
+            }
+        }
+
+        // create the http method we will use
+        MultipartPostMethod method = new MultipartPostMethod(serverURL);
+		StringPart actionPart = new StringPart("action", ACTION_UPDATE_ACCOUNT);
+		StringPart realnamePart = new StringPart("realname", realname);
+		StringPart userPart = new StringPart("username", username);
+		StringPart passPart = new StringPart("password", password);
+		StringPart emailPart = new StringPart("email", password);
+		method.addPart(actionPart);
+		method.addPart(realnamePart);
+		method.addPart(userPart);
+		method.addPart(passPart);
+		method.addPart(emailPart);
+		
+        // connect to the upload server, retrying up to the specified num
+        int statusCode = -1;
+        //for (int attempt = 0; statusCode == -1 && attempt < 3; attempt++) {
+            try {
+                // execute the get method
+                log.debug("WoWUploader: updating account");
+                statusCode = client.executeMethod(method);
+            } catch (HttpRecoverableException e) {
+                log.debug("WoWUploader: a recoverable exception occurred, retrying.", e);
+                throw new WoWUploaderConnectException("error: "+e);
+            } catch (IOException e) {
+                log.debug("WoWUploader: failed to upload data: ", e);
+                throw new WoWUploaderConnectException("error: "+e);
+            }
+        //}
+
+        // check that we didn't run out of retries
+        if (statusCode != HttpStatus.SC_OK) {
+            log.error("WoWUploader: failed to update account: "+HttpStatus.getStatusText(statusCode));
+            throw new WoWUploaderException("failed to create account");
+        } else {
+            // read the response body
+            byte[] responseBody = method.getResponseBody();
+
+            // release the connection
+            method.releaseConnection();
+
+            // deal with the response.
+            // FIXME - ensure we use the correct character encoding here
+            String response = new String(responseBody);
+            log.debug("WoWUploader: response was: "+response);
+            
+            if (response.equals(FAILURE)) {
+            	log.error("WoWUploader: failed to create account");
+            	throw new WoWUploaderException("error");
+            } else if (response.equals(ERROR_USER_PASS)) {
+               	log.error("WoWUpload: invalid user/pass");
+               	throw new InvalidUserPassException();
             } else if (response.equals(SUCCESS)) {
             	log.debug("WoWUploader: account created");
             	// do nothing

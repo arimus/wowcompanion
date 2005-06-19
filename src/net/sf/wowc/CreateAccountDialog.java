@@ -35,6 +35,8 @@ import org.apache.log4j.Logger;
  * Window - Preferences - Java - Code Style - Code Templates
  */
 public class CreateAccountDialog extends JDialog {
+	private JTextField emailField;
+	private JLabel emailLabel;
 	private static Logger log = null; 
 	private final JPasswordField confirmPasswordField;
 	private final JPasswordField passwordField;
@@ -89,9 +91,10 @@ public class CreateAccountDialog extends JDialog {
 
 	public CreateAccountDialog(Frame frame) {
 		super(frame);
+		GridBagConstraints gridBagConstraints_1;
 		setTitle("Create Account");
 		getContentPane().setLayout(new GridBagLayout());
-		setBounds(100, 100, 298, 158);
+		setBounds(100, 100, 301, 187);
 
 		usernameLabel = new JLabel();
 		gridBagConstraints = new GridBagConstraints();
@@ -150,6 +153,25 @@ public class CreateAccountDialog extends JDialog {
 		statusMessage.setPreferredSize(new Dimension(100, 20));
 		getContentPane().add(statusMessage, gridBagConstraints);
 
+	    emailLabel = new JLabel();
+	    gridBagConstraints_1 = new GridBagConstraints();
+	    gridBagConstraints_1.insets = new Insets(5, 0, 5, 10);
+	    gridBagConstraints_1.anchor = GridBagConstraints.NORTHEAST;
+	    gridBagConstraints_1.gridy = 2;
+	    gridBagConstraints_1.gridx = 0;
+	    getContentPane().add(emailLabel, gridBagConstraints_1);
+	    emailLabel.setText("Email:");
+
+	    emailField = new JTextField();
+	    emailField.setPreferredSize(new Dimension(100, 20));
+	    emailField.setMinimumSize(new Dimension(100, 20));
+	    emailField.setMaximumSize(new Dimension(100, 20));
+	    emailField.setToolTipText("Your email address");
+	    gridBagConstraints_1 = new GridBagConstraints();
+	    gridBagConstraints_1.gridy = 2;
+	    gridBagConstraints_1.gridx = 1;
+	    getContentPane().add(emailField, gridBagConstraints_1);
+
 		statusMessage2 = new JLabel("", JLabel.CENTER);
 		statusMessage2.setMinimumSize(new Dimension(100, 20));
 		statusMessage2.setPreferredSize(new Dimension(100, 20));
@@ -161,51 +183,22 @@ public class CreateAccountDialog extends JDialog {
 		getContentPane().add(statusMessage2, gridBagConstraints);
 
 		passwordLabel = new JLabel();
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.insets = new Insets(5, 0, 5, 10);
-		gridBagConstraints.anchor = GridBagConstraints.EAST;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.gridx = 0;
-		getContentPane().add(passwordLabel, gridBagConstraints);
+		gridBagConstraints_1 = new GridBagConstraints();
+		gridBagConstraints_1.insets = new Insets(5, 0, 5, 10);
+		gridBagConstraints_1.anchor = GridBagConstraints.EAST;
+		gridBagConstraints_1.gridy = 3;
+		gridBagConstraints_1.gridx = 0;
+		getContentPane().add(passwordLabel, gridBagConstraints_1);
 		passwordLabel.setText("Password:");
 
 		passwordField = new JPasswordField();
+		gridBagConstraints_1 = new GridBagConstraints();
+		gridBagConstraints_1.gridy = 3;
+		gridBagConstraints_1.gridx = 1;
+		getContentPane().add(passwordField, gridBagConstraints_1);
 		passwordField.setToolTipText("The password you will use to login");
 		passwordField.setMinimumSize(new Dimension(100, 20));
 		passwordField.setPreferredSize(new Dimension(100, 20));
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.insets = new Insets(5, 0, 5, 0);
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.gridx = 1;
-		getContentPane().add(passwordField, gridBagConstraints);
-
-		confirmLabel = new JLabel();
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.insets = new Insets(5, 0, 5, 10);
-		gridBagConstraints.anchor = GridBagConstraints.EAST;
-		gridBagConstraints.gridy = 3;
-		gridBagConstraints.gridx = 0;
-		getContentPane().add(confirmLabel, gridBagConstraints);
-		confirmLabel.setText("Confirm:");
-
-		confirmPasswordField = new JPasswordField();
-		confirmPasswordField.setToolTipText("Re-type the password you entered");
-		confirmPasswordField.setPreferredSize(new Dimension(100, 20));
-		confirmPasswordField.setMinimumSize(new Dimension(100, 20));
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.insets = new Insets(5, 0, 5, 0);
-		gridBagConstraints.gridy = 3;
-		gridBagConstraints.gridx = 1;
-		getContentPane().add(confirmPasswordField, gridBagConstraints);
-
-		createButton = new JButton();
-		createButton.setPreferredSize(new Dimension(75, 20));
-		gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.insets = new Insets(5, 10, 5, 0);
-		gridBagConstraints.gridy = 3;
-		gridBagConstraints.gridx = 2;
-		getContentPane().add(createButton, gridBagConstraints);
-		createButton.setText("Create");
 		
 		MouseAdapter createButtonAdaptor = new MouseAdapter() {
 			public void mouseReleased(MouseEvent evt) {
@@ -214,6 +207,7 @@ public class CreateAccountDialog extends JDialog {
 				
 				String username = new String(usernameField.getText());
 				String realName = new String(realnameField.getText());
+				String email = new String(emailField.getText());
 				String password1 = new String(passwordField.getPassword());
 				String password2 = new String(confirmPasswordField.getPassword());
 				String message1 = "";
@@ -232,8 +226,10 @@ public class CreateAccountDialog extends JDialog {
 				
 					// send information for the account to be created
 					try {
+					    log.debug("Creating account with password '"+password1+"'");
 						String password = MD5.getMD5(password1.getBytes("UTF8"));
-						WoWUploader.createAccount(realName, username, password);
+						WoWUploader.createAccount(realName, email, username, password);
+						log.debug("Account successfully created");
 						message1 = "Account created";
 						success = true;
 					} catch (InvalidUsernameException e) {
@@ -253,17 +249,22 @@ public class CreateAccountDialog extends JDialog {
 						message1 = "System error";
 					}
 				} else if (username == null || username.equals("")){
+					log.debug("CreateAccountDialog: empty username field");
 					message1 = "Username field";
 					message2 = "is empty";
 				} else if (password1 != null && password1.length() < 6){
+					log.debug("CreateAccountDialog: password too short");
 					message1 = "Passwords must be";
 					message2 = "> 6 chars in length";
 				} else if (password1 != null && !password1.equals(password2)) {
+					log.debug("CreateAccountDialog: passwords don't match");
 					message1 = "Passwords must";
 					message2 = "match";
 				} else if (password1 == null) {
+					log.debug("CreateAccountDialog: empty password");
 					message1 = "Password is empty";
 				} else {
+					log.debug("CreateAccountDialog: error creating account");
 					message1 = "Error";
 				}
 
@@ -298,6 +299,32 @@ public class CreateAccountDialog extends JDialog {
 				}
 			}
 		};
+
+		confirmLabel = new JLabel();
+		gridBagConstraints_1 = new GridBagConstraints();
+		gridBagConstraints_1.insets = new Insets(5, 0, 5, 10);
+		gridBagConstraints_1.anchor = GridBagConstraints.EAST;
+		gridBagConstraints_1.gridy = 4;
+		gridBagConstraints_1.gridx = 0;
+		getContentPane().add(confirmLabel, gridBagConstraints_1);
+		confirmLabel.setText("Confirm:");
+
+		confirmPasswordField = new JPasswordField();
+		gridBagConstraints_1 = new GridBagConstraints();
+		gridBagConstraints_1.gridy = 4;
+		gridBagConstraints_1.gridx = 1;
+		getContentPane().add(confirmPasswordField, gridBagConstraints_1);
+		confirmPasswordField.setToolTipText("Re-type the password you entered");
+		confirmPasswordField.setPreferredSize(new Dimension(100, 20));
+		confirmPasswordField.setMinimumSize(new Dimension(100, 20));
+
+		createButton = new JButton();
+		gridBagConstraints_1 = new GridBagConstraints();
+		gridBagConstraints_1.gridy = 4;
+		gridBagConstraints_1.gridx = 2;
+		getContentPane().add(createButton, gridBagConstraints_1);
+		createButton.setPreferredSize(new Dimension(75, 20));
+		createButton.setText("Create");
 		createButton.addMouseListener(createButtonAdaptor);
 	}
 	

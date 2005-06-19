@@ -55,6 +55,7 @@ import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
 
 import net.sf.wowc.util.*;
+
 import javax.swing.JCheckBoxMenuItem;
 
 /**
@@ -133,55 +134,6 @@ public class WoWCompanion {
 
 		try {
 			WoWCompanion window = new WoWCompanion();
-
-//			// LOG CONFIGURATION
-//			
-//			// get the file appender
-//			Logger rootLogger = Logger.getRootLogger();
-//			Enumeration appenders = fileLogger.getAllAppenders();
-//			FileAppender appender = null;
-//			
-//			rootLogger.removeAllAppenders();
-//			//rootLogger.error("WoWCompanion: searching for file appender");
-//
-//			// setup the logger before continuing
-//			while (appenders.hasMoreElements()) {
-//				FileAppender a = (FileAppender)appenders.nextElement();
-//				if (a instanceof FileAppender) {
-//					appender = a;
-//					//rootLogger.error("WoWCompanion: found appender");
-//				} else {
-//					//rootLogger.error("WoWCompanion: not correct appender, '"+a.getName()+"'");
-//				}
-//			}
-//			
-//			// if we have a file appender
-//			if (appender != null) {
-//				String logName = appender.getFile();
-//				
-//				// we want the log to be saved into the WoW directory
-//				File f = new File(baseDirPath);
-//				if (f.exists() && f.isDirectory()) {
-//					// adjust the appender
-//					logName = homeDirectory + File.separator + logName;
-//					//rootLogger.error("WoWCompanion: setting file for appender to '"+logName+"'");
-//					appender.setFile(logName);
-//					appender.activateOptions();
-//					log.removeAllAppenders();
-//					log.addAppender(appender);
-//				}
-//			}
-//			
-//			// we want the log to be saved into the WoW directory
-//			File f = new File(baseDirPath + File.separator + "wowcompanion.log");
-//			if (f.exists() && f.isDirectory()) {
-//				// adjust the appender
-//				String l = baseDirPath + File.separator + "wowcompanion.log";
-//				//rootLogger.debug("WoWCompanion: saving log '"+baseDirPath + File.separator + "wowcompanion.log"+"'");
-//				appender.setFile(l);
-//			}
-//			
-//			// END LOG CONFIGURATION
 
 			// center our window
 			Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
@@ -282,14 +234,6 @@ public class WoWCompanion {
 			log.error("WoWCompanion: failed to load default properties", e);
 		}
 
-		//try {
-		//	accountPath = config.getProperty("account.path");
-		//	log.debug("WoWCompanion: setting account path to '"+accountPath+"'");
-		//} catch (WoWConfigPropertyNotFoundException e) {
-		//	// FIXME - show an error dialog here, then exit
-		//	log.debug("WoWCompanion: failed to retrieve account path from properties");
-		//}
-
 		try {
 		    savedVarFileName = config.getProperty("data.filename");
 			log.debug("WoWCompanion: setting saved var filename to '"+savedVarFileName+"'");
@@ -308,7 +252,7 @@ public class WoWCompanion {
 		frame.setResizable(false);
 		frame.setSize(new Dimension(0, 0));
 		frame.getContentPane().setLayout(new GridBagLayout());
-		frame.setBounds(100, 100, 326, 195);
+		frame.setBounds(100, 100, 339, 209);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setTitle("WoWCompanion");
 
@@ -459,6 +403,7 @@ public class WoWCompanion {
 		frame.getContentPane().add(accountSelect, gridBagConstraints);
 
 		browseButton = new JButton();
+		browseButton.setMinimumSize(new Dimension(80, 25));
 		accountSelect.setNextFocusableComponent(browseButton);
 		browseButton.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {
@@ -475,7 +420,7 @@ public class WoWCompanion {
 				//progressBar.setVisible(false);
 			}
 		});
-		browseButton.setPreferredSize(new Dimension(75, 25));
+		browseButton.setPreferredSize(new Dimension(80, 25));
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
 		gridBagConstraints.gridy = 0;
@@ -496,9 +441,10 @@ public class WoWCompanion {
 
 		usernameField = new JTextField();
 		browseButton.setNextFocusableComponent(usernameField);
-		usernameField.setMinimumSize(new Dimension(150, 20));
-		usernameField.setMaximumSize(new Dimension(150, 20));
-		usernameField.setPreferredSize(new Dimension(150, 20));
+		usernameField.setMinimumSize(new Dimension(150, 25));
+		usernameField.setMaximumSize(new Dimension(150, 25));
+		usernameField.setPreferredSize(new Dimension(150, 25));
+		//usernameField.setMargin(new Insets(5, 10, 5, 10));
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -528,9 +474,9 @@ public class WoWCompanion {
 		usernameField.setNextFocusableComponent(passwordField);
 		passwordField.setNextFocusableComponent(savePasswordCheckBox);
 		usernameField.setNextFocusableComponent(passwordField);
-		passwordField.setMinimumSize(new Dimension(150, 20));
-		passwordField.setMaximumSize(new Dimension(150, 20));
-		passwordField.setPreferredSize(new Dimension(150, 20));
+		passwordField.setMinimumSize(new Dimension(150, 25));
+		passwordField.setMaximumSize(new Dimension(150, 25));
+		passwordField.setPreferredSize(new Dimension(150, 25));
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -552,6 +498,7 @@ public class WoWCompanion {
 
 		
 		uploadButton = new JButton();
+		uploadButton.setMinimumSize(new Dimension(80, 25));
 		passwordField.setNextFocusableComponent(uploadButton);
 		uploadButton.setNextFocusableComponent(accountSelect);
 		savePasswordCheckBox.setNextFocusableComponent(uploadButton);
@@ -581,7 +528,7 @@ public class WoWCompanion {
 			public void keyReleased(KeyEvent e) { }
 		}
 		);
-		uploadButton.setPreferredSize(new Dimension(75, 25));
+		uploadButton.setPreferredSize(new Dimension(80, 25));
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.insets = new Insets(5, 5, 5, 5);
 		gridBagConstraints.gridy = 2;
@@ -646,7 +593,7 @@ public class WoWCompanion {
 		fileChooser.setApproveButtonText("OK");
 		fileChooser.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
 		fileChooser.setToolTipText("Browse to your WoW Account Directory");
-		fileChooser.setSelectedFile(new File(defaultBaseDirPath));
+		fileChooser.setSelectedFile(new File(baseDirPath));
 		fileChooser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				fileChooserActionPerformed(evt);
@@ -702,14 +649,6 @@ public class WoWCompanion {
             }
         });
         
-        // set the initial focus on the password box
-	    //usernameField.setFocusable(true);
-		//if (!usernameField.isRequestFocusEnabled()) { 
-	    //	usernameField.setRequestFocusEnabled(true); 
-	    //}
-	    //usernameField.requestFocus();
-	    //usernameField.requestFocusInWindow();
-        
         if (loglevel.equals("DEBUG")) {
 			debugMenuItem.setSelected(true);
         }
@@ -732,7 +671,15 @@ public class WoWCompanion {
                 if (theFile.isDirectory()) {
                     // set the directory here
                     baseDirPath = fileChooser.getSelectedFile().getAbsolutePath();
-                    log.debug("WoWCompanion: setting accountDir to "+fileChooser.getSelectedFile().getAbsolutePath());
+                    
+                    try {
+                        config.setPreference("basedir", baseDirPath);
+                        config.savePreferences();
+                    } catch (IOException e) {
+                        log.error("WoWCompanion: error setting WoW directory", e);
+                    }
+                    
+                    log.debug("WoWCompanion: setting accountDir to "+baseDirPath);
                     statusLabel.setForeground(new Color(0, 150, 0));
                     statusLabel.setText("Valid Account Dir");
                 } else {
@@ -829,7 +776,10 @@ public class WoWCompanion {
         String tmp = "";
         try {
             String accountName = (String)accountSelect.getSelectedItem();
-            if (accountName == null) {
+            if ((accountName == null) || 
+                (accountName.indexOf("INVALID ACCOUNT DIR") != -1) ||
+                (accountName.indexOf("NO ACCOUNTS") != -1)) 
+            {
                 throw new FileNotFoundException("an account has not been selected");
             }
 
@@ -923,22 +873,6 @@ public class WoWCompanion {
             statusLabel.setForeground(Color.RED);
 			statusLabel.setText("Error opening account dir");
 			log.error("WoWCompanion: error opening account directory");
-//		} catch (WoWParserException e) {
-//			System.err.println(e);
-//            statusLabel.setForeground(Color.RED);
-//			statusLabel.setText("Unable to parse account data");
-//		} catch (WoWUploaderConnectException e) {
-//			System.err.println(e);
-//            statusLabel.setForeground(Color.RED);
-//			statusLabel.setText("Unable to connect");
-//		} catch (InvalidUserPassException e) {
-//			System.err.println(e);
-//            statusLabel.setForeground(Color.RED);
-//			statusLabel.setText("Invalid user/pass");
-//		} catch (WoWUploaderException e) {
-//			System.err.println("error: "+e);
-//            statusLabel.setForeground(Color.RED);
-//			statusLabel.setText("Error sending data");
         }
     }
 	

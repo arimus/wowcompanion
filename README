@@ -1,4 +1,4 @@
-WoWCompanion (TM) v0.1.10
+WoWCompanion (TM) v0.1.12
 Copyright (C) 2004-2005, David Castro
 Contact:  David Castro <arimus@users.sourceforge.net>
 
@@ -36,7 +36,7 @@ if the developers of WoW Companion are pinched for time.
 
 Requirements to run:
   Java 2 JRE 1.4+
-  Character Profiler >= 0.983 (http://www.cethinchimera.com/)
+  WoW Companion Server 0.1.12
   World of Warcraft =)
 
 Requirements to build:
@@ -48,13 +48,20 @@ Requirements to build:
   Commons HttpClient 2.0.2 (bundled)
   One-Jar 0.95 (bundled)
   JSmooth 0.9.7 (if you to build an .exe)
-  Character Profiler >= 0.983 (http://www.cethinchimera.com/)
   World of Warcraft =)
 
 Building:
-  type 'ant'
+  To get a jar suitable for use with Java Web Start
 
-  should have your jar file in ./dist
+	  type 'ant'
+
+	  should have your jar file in ./dist
+
+  To get a jar suitable for standalone distribution
+
+	  type 'ant onejar'
+
+	  should have a jar bundles with supporting libs in ./dist
 
 Testing:
   Log4j setting can be modified in properties/log4j.properties
